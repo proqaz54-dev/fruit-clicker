@@ -1,16 +1,19 @@
-node_modules/
-.capacitor/
-dist/
 *.log
 .DS_Store
 Thumbs.db
 
-# Capacitor generated
+# Build outputs
 android/.gradle/
 android/build/
+android/app/build/
 android/local.properties
 android/captures/
-android/app/build/
+android/gradle/
+
+# Capacitor (no longer used)
+.capacitor/
+node_modules/
+dist/
 
 # IDE
 .idea/

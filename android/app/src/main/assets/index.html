@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Fruit Clicker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-icon">🪙</span>
+          <span class="stat-value" id="coinDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">⚡</span>
+          <span class="stat-value" id="incomeDisplay">0/sec</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">👆</span>
+          <span class="stat-value" id="clickPowerDisplay">+1</span>
+        </div>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </header>
+
+    <main id="main">
+      <div class="click-area" id="clickArea">
+        <div class="click-fruit-wrapper" id="clickFruitWrapper">
+          <span class="click-fruit" id="clickFruit">🍎</span>
+        </div>
+        <div class="click-hint" id="clickHint">Tap the fruit!</div>
+        <div id="particleContainer"></div>
+      </div>
+
+      <section class="fruits-section">
+        <div class="section-header">
+          <h2>Your Garden</h2>
+          <span class="fruit-count" id="fruitCount">1</span>
+        </div>
+        <div class="fruits-list" id="fruitsList"></div>
+      </section>
+    </main>
+
+    <footer id="footer">
+      <div class="footer-btn active" data-tab="garden">
+        <span>🌳</span>
+        <span class="footer-label">Garden</span>
+      </div>
+      <div class="footer-btn" data-tab="stats">
+        <span>📊</span>
+        <span class="footer-label">Stats</span>
+      </div>
+      <div class="footer-btn" data-tab="prestige">
+        <span>🌟</span>
+        <span class="footer-label">Prestige</span>
+      </div>
+    </footer>
+
+    <div class="tab-content" id="tabStats" style="display:none;">
+      <div class="stats-panel">
+        <h2>Statistics</h2>
+        <div class="stat-row"><span>Total Coins Earned</span><span id="statTotalCoins">0</span></div>
+        <div class="stat-row"><span>Total Clicks</span><span id="statTotalClicks">0</span></div>
+        <div class="stat-row"><span>Click Power</span><span id="statClickPower">1</span></div>
+        <div class="stat-row"><span>Income / Sec</span><span id="statIncome">0</span></div>
+        <div class="stat-row"><span>Fruits Owned</span><span id="statFruits">1</span></div>
+        <div class="stat-row"><span>Prestige Level</span><span id="statPrestige">0</span></div>
+        <div class="stat-row"><span>Prestige Bonus</span><span id="statPrestigeBonus">0x</span></div>
+        <button class="btn danger" id="resetBtn">Reset All Progress</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tabPrestige" style="display:none;">
+      <div class="stats-panel prestige-panel">
+        <h2>🌟 Prestige</h2>
+        <p class="prestige-desc">Reset your garden for a permanent multiplier!</p>
+        <div class="stat-row"><span>Current Prestige</span><span id="prestigeLevel">0</span></div>
+        <div class="stat-row"><span>Multiplier</span><span id="prestigeMultiplier">1x</span></div>
+        <div class="stat-row prestige-required">
+          <span>Required for next</span>
+          <span id="prestigeRequired">1,000</span>
+        </div>
+        <div class="stat-row prestige-gain">
+          <span>Will gain</span>
+          <span id="prestigeGain">+1</span>
+        </div>
+        <button class="btn prestige-btn" id="prestigeBtn">Prestige</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>

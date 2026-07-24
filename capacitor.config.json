@@ -1,8 +1,0 @@
-{
-  "appId": "com.fruitclicker.app",
-  "appName": "Fruit Clicker",
-  "webDir": ".",
-  "server": {
-    "androidScheme": "https"
-  }
-}
