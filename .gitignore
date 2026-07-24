@@ -1,0 +1,18 @@
+node_modules/
+.capacitor/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# Capacitor generated
+android/.gradle/
+android/build/
+android/local.properties
+android/captures/
+android/app/build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
