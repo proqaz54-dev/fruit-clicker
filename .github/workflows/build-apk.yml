@@ -39,7 +39,7 @@ jobs:
           echo "$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Sync Capacitor
         run: npx cap sync android
