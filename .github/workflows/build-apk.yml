@@ -2,15 +2,14 @@ name: Build APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -25,7 +24,20 @@ jobs:
           java-version: 17
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          ANDROID_HOME=$HOME/Android/Sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -O /tmp/cmdline-tools.zip
+          mkdir -p /tmp/cmdline-tools-tmp
+          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools-tmp
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv /tmp/cmdline-tools-tmp/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/ 2>/dev/null || true
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: npm ci
@@ -43,18 +55,3 @@ jobs:
         with:
           name: fruit-clicker-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Build Release APK
-        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-        run: |
-          cd android
-          KEYSTORE_BASE64="${{ secrets.ANDROID_KEYSTORE_BASE64 }}"
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
-            ./gradlew assembleRelease -Pandroid.injected.signing.store.file=release.keystore \
-              -Pandroid.injected.signing.store.password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
-              -Pandroid.injected.signing.key.alias="${{ secrets.ANDROID_KEY_ALIAS }}" \
-              -Pandroid.injected.signing.key.password="${{ secrets.ANDROID_KEY_PASSWORD }}"
-          else
-            echo "No keystore secrets found, skipping release build"
-          fi
