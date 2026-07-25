@@ -41,7 +41,7 @@ jobs:
 
       - name: Build (if build script exists)
         run: |
-          if [ -f "package.json" ] && grep -q '"build"' package.json; then
+          if [ -f "package.json" ] && grep -q '"build"' package.json && [ -f "./gradlew" ]; then
             npm run build
           else
             echo "No build script found, skipping build step"
