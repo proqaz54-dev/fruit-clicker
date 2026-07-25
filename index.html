@@ -54,6 +54,10 @@
         <span>🌳</span>
         <span class="footer-label">Garden</span>
       </div>
+      <div class="footer-btn" data-tab="shop">
+        <span>🏪</span>
+        <span class="footer-label">Shop</span>
+      </div>
       <div class="footer-btn" data-tab="stats">
         <span>📊</span>
         <span class="footer-label">Stats</span>
@@ -63,6 +67,17 @@
         <span class="footer-label">Prestige</span>
       </div>
     </footer>
+
+    <div class="tab-content" id="tabShop" style="display:none;">
+      <div class="shop-panel">
+        <div class="shop-header">
+          <h2>🏪 Global Stock</h2>
+          <div class="shop-timer" id="shopTimer">05:00</div>
+        </div>
+        <p class="shop-desc">Limited stock refreshes every 5 minutes for all players!</p>
+        <div class="shop-list" id="shopList"></div>
+      </div>
+    </div>
 
     <div class="tab-content" id="tabStats" style="display:none;">
       <div class="stats-panel">
@@ -98,6 +113,7 @@
   </div>
 
   <div class="notification" id="notification"></div>
+  <div class="shop-refresh-notification" id="shopRefreshNotif">🏪 Stock refreshed!</div>
 
   <script src="js/game.js"></script>
 </body>

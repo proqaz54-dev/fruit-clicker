@@ -1,5 +1,6 @@
 const FRUITS = [
   { id: 'apple', name: 'Apple', emoji: '🍎', baseCost: 0, baseIncome: 0.5, cpc: 1, costMultiplier: 1.15, unlocked: true, minCost: 0 },
+  { id: 'banana', name: 'Banana', emoji: '🍌', baseCost: 25, baseIncome: 1, cpc: 2, costMultiplier: 1.15, unlocked: false, minCost: 25 },
   { id: 'orange', name: 'Orange', emoji: '🍊', baseCost: 50, baseIncome: 2, cpc: 2, costMultiplier: 1.15, unlocked: false, minCost: 100 },
   { id: 'lemon', name: 'Lemon', emoji: '🍋', baseCost: 200, baseIncome: 6, cpc: 5, costMultiplier: 1.15, unlocked: false, minCost: 500 },
   { id: 'grape', name: 'Grapes', emoji: '🍇', baseCost: 800, baseIncome: 18, cpc: 10, costMultiplier: 1.15, unlocked: false, minCost: 3000 },
@@ -7,9 +8,39 @@ const FRUITS = [
   { id: 'peach', name: 'Peach', emoji: '🍑', baseCost: 12000, baseIncome: 150, cpc: 40, costMultiplier: 1.15, unlocked: false, minCost: 60000 },
   { id: 'cherry', name: 'Cherry', emoji: '🍒', baseCost: 40000, baseIncome: 500, cpc: 80, costMultiplier: 1.15, unlocked: false, minCost: 200000 },
   { id: 'kiwi', name: 'Kiwi', emoji: '🥝', baseCost: 150000, baseIncome: 1500, cpc: 160, costMultiplier: 1.15, unlocked: false, minCost: 800000 },
+  { id: 'mango', name: 'Mango', emoji: '🥭', baseCost: 300000, baseIncome: 3000, cpc: 200, costMultiplier: 1.15, unlocked: false, minCost: 1500000 },
   { id: 'pineapple', name: 'Pineapple', emoji: '🍍', baseCost: 500000, baseIncome: 5000, cpc: 320, costMultiplier: 1.15, unlocked: false, minCost: 3000000 },
   { id: 'watermelon', name: 'Watermelon', emoji: '🍉', baseCost: 2000000, baseIncome: 15000, cpc: 640, costMultiplier: 1.15, unlocked: false, minCost: 10000000 },
+  { id: 'coconut', name: 'Coconut', emoji: '🥥', baseCost: 5000000, baseIncome: 30000, cpc: 1000, costMultiplier: 1.15, unlocked: false, minCost: 25000000 },
 ];
+
+const SHOP_ITEMS = [
+  { id: 'apple', chance: 1.0, minQty: 2, maxQty: 15, price: 3 },
+  { id: 'banana', chance: 0.2, minQty: 2, maxQty: 15, price: 15 },
+  { id: 'orange', chance: 0.14, minQty: 1, maxQty: 10, price: 40 },
+  { id: 'strawberry', chance: 0.1, minQty: 1, maxQty: 6, price: 100 },
+  { id: 'cherry', chance: 0.06, minQty: 1, maxQty: 5, price: 300 },
+  { id: 'peach', chance: 0.04, minQty: 1, maxQty: 4, price: 1000 },
+  { id: 'watermelon', chance: 0.025, minQty: 1, maxQty: 2, price: 5000 },
+  { id: 'pineapple', chance: 0.015, minQty: 1, maxQty: 2, price: 20000 },
+  { id: 'mango', chance: 0.01, minQty: 1, maxQty: 2, price: 50000 },
+  { id: 'grape', chance: 0.005, minQty: 1, maxQty: 1, price: 100000 },
+  { id: 'kiwi', chance: 0.003, minQty: 1, maxQty: 1, price: 200000 },
+  { id: 'coconut', chance: 0.002, minQty: 1, maxQty: 1, price: 500000 },
+];
+
+function createRNG(seed) {
+  let t = seed + 0x6D2B79F5;
+  return function() {
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function getStockSeed() {
+  return Math.floor(Date.now() / 300000);
+}
 
 const SAVE_KEY = 'fruitclicker_save';
 const SAVE_VERSION = 1;
@@ -30,9 +61,13 @@ class Game {
     this.saveInterval = null;
     this.audioCtx = null;
 
+    this.currentStock = [];
+    this.lastStockSeed = -1;
+    this.shopStock = [];
     this.fruitCounts[0] = 1;
     this.recalculate();
     this.load();
+    this.generateStock();
     this.setupEventListeners();
     this.renderFruits();
     this.updateUI();
@@ -226,9 +261,13 @@ class Game {
     });
     document.getElementById('tabStats').style.display = tab === 'stats' ? 'block' : 'none';
     document.getElementById('tabPrestige').style.display = tab === 'prestige' ? 'block' : 'none';
+    document.getElementById('tabShop').style.display = tab === 'shop' ? 'block' : 'none';
     document.getElementById('main').style.display = tab === 'garden' ? 'block' : 'none';
     if (tab === 'garden') {
       this.updateUI();
+    }
+    if (tab === 'shop') {
+      this.renderShop();
     }
   }
 
@@ -250,6 +289,98 @@ class Game {
     this.showNotification('🌟 Prestiged! Multiplier: ' + this.prestigeMultiplier + 'x');
     this.playPrestigeSound();
     this.save();
+  }
+
+  generateStock() {
+    const seed = getStockSeed();
+    if (seed === this.lastStockSeed && this.shopStock.length > 0) return;
+    this.lastStockSeed = seed;
+    const rng = createRNG(seed);
+    this.shopStock = [];
+    SHOP_ITEMS.forEach(item => {
+      if (rng() < item.chance) {
+        const qty = item.minQty + Math.floor(rng() * (item.maxQty - item.minQty + 1));
+        this.shopStock.push({
+          id: item.id,
+          price: item.price,
+          remaining: qty,
+          initialQty: qty
+        });
+      }
+    });
+    if (this.currentTab === 'shop') this.renderShop();
+  }
+
+  getFruitById(id) {
+    return FRUITS.find(f => f.id === id);
+  }
+
+  buyShopItem(index) {
+    const stockItem = this.shopStock[index];
+    if (!stockItem || stockItem.remaining <= 0) return;
+    const fruit = this.getFruitById(stockItem.id);
+    if (!fruit) return;
+    const totalPrice = stockItem.price;
+    if (this.coins < totalPrice) return;
+
+    const fruitIdx = FRUITS.indexOf(fruit);
+    this.coins -= totalPrice;
+    this.fruitCounts[fruitIdx]++;
+    stockItem.remaining--;
+    fruit.unlocked = true;
+    this.recalculate();
+    this.renderShop();
+    this.updateUI();
+    this.flashCard(fruitIdx);
+    this.playBuySound();
+    this.showNotification('Bought ' + fruit.emoji + ' ' + fruit.name + ' from shop!');
+  }
+
+  getStockRarity(item) {
+    const s = SHOP_ITEMS.find(si => si.id === item.id);
+    if (!s) return '';
+    if (s.chance <= 0.005) return 'epic';
+    if (s.chance <= 0.02) return 'rare';
+    return '';
+  }
+
+  renderShop() {
+    const list = document.getElementById('shopList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (this.shopStock.length === 0) {
+      list.innerHTML = '<div class="shop-empty"><span>📭</span>No items in stock this cycle.<br>Check back in 5 minutes!</div>';
+      return;
+    }
+
+    this.shopStock.forEach((item, i) => {
+      const fruit = this.getFruitById(item.id);
+      if (!fruit) return;
+      const rarity = this.getStockRarity(item);
+      const canBuy = this.coins >= item.price && item.remaining > 0;
+      const remainingPct = item.remaining / item.initialQty;
+
+      const card = document.createElement('div');
+      card.className = 'shop-item' + (rarity ? ' ' + rarity : '');
+      card.innerHTML = `
+        <div class="shop-item-emoji">${fruit.emoji}</div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">${fruit.name}</div>
+          <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">${item.remaining} left</div>
+        </div>
+        <div class="shop-item-price">🪙 ${this.formatNumber(item.price)}</div>
+        <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold' : 'Need more'}</button>
+      `;
+
+      const btn = card.querySelector('.shop-btn');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.buyShopItem(i);
+      });
+
+      list.appendChild(card);
+    });
   }
 
   showNotification(msg) {
@@ -298,7 +429,8 @@ class Game {
       this.totalClicks = data.totalClicks || 0;
       this.prestigeLevel = data.prestigeLevel || 0;
       this.prestigeMultiplier = data.prestigeMultiplier || 1;
-      this.fruitCounts = data.fruitCounts || FRUITS.map(() => 0);
+      const oldCounts = data.fruitCounts || [];
+      this.fruitCounts = FRUITS.map((_, i) => oldCounts[i] || 0);
       this.fruitCounts[0] = Math.max(1, this.fruitCounts[0]);
 
       if (data.lastSave) {
@@ -364,7 +496,36 @@ class Game {
       this.updateUI();
     }, 100);
 
+    this._shopTimerInterval = setInterval(() => {
+      this.updateShopTimer();
+
+      const newSeed = getStockSeed();
+      if (newSeed !== this.lastStockSeed) {
+        this.generateStock();
+        if (this.currentTab !== 'shop') {
+          const el = document.getElementById('shopRefreshNotif');
+          if (el) {
+            el.classList.add('show');
+            clearTimeout(this._shopRefreshTimeout);
+            this._shopRefreshTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+          }
+        }
+      }
+    }, 1000);
+
     this.saveInterval = setInterval(() => this.save(), 15000);
+  }
+
+  updateShopTimer() {
+    const el = document.getElementById('shopTimer');
+    if (!el) return;
+    const now = Date.now();
+    const nextRefresh = (Math.floor(now / 300000) + 1) * 300000;
+    const remaining = Math.max(0, nextRefresh - now);
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    el.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    el.classList.toggle('urgent', remaining < 30000);
   }
 
   setupEventListeners() {
