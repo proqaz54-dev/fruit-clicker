@@ -9,6 +9,11 @@
   --primary-dark: #E55A2B;
   --secondary: #FFD166;
   --accent: #06D6A0;
+  --crystal: #A855F7;
+  --crystal-dark: #7C3AED;
+  --rare: #FFD700;
+  --epic: #A855F7;
+  --legendary: #FF6B6B;
   --bg-start: #2D1B69;
   --bg-end: #1A0A3E;
   --card-bg: rgba(255, 255, 255, 0.08);
@@ -313,6 +318,86 @@ html, body {
   border-radius: 10px;
 }
 
+/* Rarity tags and cards */
+.fruit-rarity-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.fruit-rarity-tag.rare {
+  background: linear-gradient(135deg, var(--rare), #FFA500);
+  color: #1A0A3E;
+}
+
+.fruit-rarity-tag.epic {
+  background: linear-gradient(135deg, var(--epic), #C084FC);
+  color: white;
+}
+
+.fruit-rarity-tag.legendary {
+  background: linear-gradient(135deg, var(--legendary), #FF8C8C);
+  color: white;
+  animation: legendaryGlow 2s ease-in-out infinite;
+}
+
+@keyframes legendaryGlow {
+  0%, 100% { box-shadow: 0 0 5px var(--legendary); }
+  50% { box-shadow: 0 0 15px var(--legendary); }
+}
+
+.fruit-card.rare {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), transparent);
+}
+
+.fruit-card.epic {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), transparent);
+}
+
+.fruit-card.legendary {
+  border-color: rgba(255, 107, 107, 0.4);
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), transparent);
+  animation: legendaryCardGlow 3s ease-in-out infinite;
+}
+
+@keyframes legendaryCardGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.4); }
+}
+
+/* Crystal stat */
+.crystal-stat {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(124, 58, 237, 0.1)) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+/* Crystal particle */
+.crystal-particle {
+  position: absolute;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--crystal);
+  pointer-events: none;
+  animation: crystalFloat 1.2s ease-out forwards;
+  z-index: 6;
+  text-shadow: 0 0 10px var(--crystal);
+}
+
+@keyframes crystalFloat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(1.2) rotate(360deg);
+  }
+}
+
 .fruit-card-income {
   font-size: 12px;
   color: var(--accent);
@@ -384,6 +469,274 @@ html, body {
 .footer-label {
   font-size: 10px;
   font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ===== CASES PANEL ===== */
+.cases-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.cases-panel h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.cases-desc {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.case-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+}
+
+.case-item.rare {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.case-item.epic {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.case-item.legendary {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 215, 0, 0.1));
+  border-color: rgba(255, 107, 107, 0.4);
+  animation: legendaryCaseGlow 2s ease-in-out infinite;
+}
+
+@keyframes legendaryCaseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+}
+
+.case-emoji {
+  font-size: 42px;
+  flex-shrink: 0;
+}
+
+.case-info {
+  flex: 1;
+}
+
+.case-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.case-cost {
+  font-size: 14px;
+  color: var(--crystal);
+  font-weight: 600;
+}
+
+.case-btn {
+  background: linear-gradient(135deg, var(--crystal), var(--crystal-dark));
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.case-btn:active {
+  transform: scale(0.95);
+}
+
+.case-btn:disabled {
+  opacity: 0.4;
+  transform: none !important;
+}
+
+/* ===== REWARDS PANEL ===== */
+.rewards-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.rewards-panel h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.rewards-section {
+  margin-bottom: 24px;
+}
+
+.rewards-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--secondary);
+}
+
+.rewards-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.streak-display {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--glass);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: all 0.2s;
+}
+
+.reward-item.available {
+  border-color: var(--accent);
+  background: rgba(6, 214, 160, 0.1);
+}
+
+.reward-item.claimed {
+  opacity: 0.5;
+}
+
+.reward-icon {
+  font-size: 28px;
+  width: 40px;
+  text-align: center;
+}
+
+.reward-info {
+  flex: 1;
+}
+
+.reward-time {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reward-amount {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.claim-btn {
+  background: linear-gradient(135deg, var(--accent), #05B88A);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.claim-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.claim-btn:disabled {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* Daily rewards */
+.daily-rewards-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.daily-reward-item {
+  flex-shrink: 0;
+  width: 70px;
+  background: var(--glass);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.daily-reward-item.today {
+  border-color: var(--accent);
+  background: rgba(6, 214, 160, 0.15);
+  animation: dailyPulse 2s ease-in-out infinite;
+}
+
+@keyframes dailyPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.daily-reward-item.past {
+  opacity: 0.5;
+}
+
+.daily-day {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.daily-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.daily-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.daily-reward-item.past .daily-label {
   color: var(--text-muted);
 }
 
@@ -517,6 +870,174 @@ html, body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
+}
+
+/* ===== SHOP ===== */
+.shop-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.shop-header h2 {
+  font-size: 20px;
+}
+
+.shop-timer {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--secondary);
+  font-variant-numeric: tabular-nums;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-family: 'SF Mono', 'Courier New', monospace;
+}
+
+.shop-timer.urgent {
+  color: #EF4444;
+  animation: timerPulse 1s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.shop-desc {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.shop-item.rare {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.shop-item.epic {
+  border-color: rgba(147, 51, 234, 0.3);
+  background: rgba(147, 51, 234, 0.05);
+}
+
+.shop-item-emoji {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+.shop-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-item-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.shop-item-qty {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.shop-item-qty.low {
+  color: #EF4444;
+}
+
+.shop-item-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--secondary);
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+.shop-btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.shop-btn:active {
+  transform: scale(0.95);
+}
+
+.shop-btn:disabled {
+  opacity: 0.3;
+  transform: none !important;
+}
+
+.shop-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.shop-empty span {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.shop-refresh-notification {
+  position: fixed;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--secondary);
+  z-index: 150;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.shop-refresh-notification.show {
+  opacity: 1;
 }
 
 /* ===== FLOATING COINS INCOME ===== */

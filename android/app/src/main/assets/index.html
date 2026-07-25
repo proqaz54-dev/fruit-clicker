@@ -17,6 +17,10 @@
           <span class="stat-icon">🪙</span>
           <span class="stat-value" id="coinDisplay">0</span>
         </div>
+        <div class="stat crystal-stat">
+          <span class="stat-icon">💎</span>
+          <span class="stat-value" id="crystalDisplay">0</span>
+        </div>
         <div class="stat">
           <span class="stat-icon">⚡</span>
           <span class="stat-value" id="incomeDisplay">0/sec</span>
@@ -36,7 +40,7 @@
         <div class="click-fruit-wrapper" id="clickFruitWrapper">
           <span class="click-fruit" id="clickFruit">🍎</span>
         </div>
-        <div class="click-hint" id="clickHint">Tap the fruit!</div>
+        <div class="click-hint" id="clickHint">Tap the fruit! 💎 3% chance for crystals!</div>
         <div id="particleContainer"></div>
       </div>
 
@@ -54,15 +58,60 @@
         <span>🌳</span>
         <span class="footer-label">Garden</span>
       </div>
+      <div class="footer-btn" data-tab="shop">
+        <span>🏪</span>
+        <span class="footer-label">Shop</span>
+      </div>
+      <div class="footer-btn" data-tab="cases">
+        <span>📦</span>
+        <span class="footer-label">Cases</span>
+      </div>
+      <div class="footer-btn" data-tab="rewards">
+        <span>🎁</span>
+        <span class="footer-label">Rewards</span>
+      </div>
       <div class="footer-btn" data-tab="stats">
         <span>📊</span>
         <span class="footer-label">Stats</span>
       </div>
-      <div class="footer-btn" data-tab="prestige">
-        <span>🌟</span>
-        <span class="footer-label">Prestige</span>
-      </div>
     </footer>
+
+    <div class="tab-content" id="tabShop" style="display:none;">
+      <div class="shop-panel">
+        <div class="shop-header">
+          <h2>🏪 Global Stock</h2>
+          <div class="shop-timer" id="shopTimer">05:00</div>
+        </div>
+        <p class="shop-desc">Limited stock refreshes every 5 minutes for all players!</p>
+        <div class="shop-list" id="shopList"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tabCases" style="display:none;">
+      <div class="cases-panel">
+        <h2>📦 Crystal Cases</h2>
+        <p class="cases-desc">Open cases to win coins, crystals, and rare fruits!</p>
+        <div class="cases-list" id="casesList"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tabRewards" style="display:none;">
+      <div class="rewards-panel">
+        <h2>🎁 Rewards</h2>
+        
+        <div class="rewards-section">
+          <h3>⏱️ Time Rewards</h3>
+          <p class="rewards-subtitle">Play longer to earn rewards!</p>
+          <div id="timeRewards" class="rewards-list"></div>
+        </div>
+
+        <div class="rewards-section">
+          <h3>📅 Daily Rewards</h3>
+          <p class="streak-display" id="streakDisplay">🔥 0 day streak</p>
+          <div id="dailyRewards" class="daily-rewards-list"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="tab-content" id="tabStats" style="display:none;">
       <div class="stats-panel">
@@ -72,32 +121,17 @@
         <div class="stat-row"><span>Click Power</span><span id="statClickPower">1</span></div>
         <div class="stat-row"><span>Income / Sec</span><span id="statIncome">0</span></div>
         <div class="stat-row"><span>Fruits Owned</span><span id="statFruits">1</span></div>
+        <div class="stat-row"><span>Total Crystals</span><span id="statCrystals">0</span></div>
+        <div class="stat-row"><span>Login Streak</span><span id="statStreak">0 days</span></div>
         <div class="stat-row"><span>Prestige Level</span><span id="statPrestige">0</span></div>
         <div class="stat-row"><span>Prestige Bonus</span><span id="statPrestigeBonus">0x</span></div>
         <button class="btn danger" id="resetBtn">Reset All Progress</button>
       </div>
     </div>
-
-    <div class="tab-content" id="tabPrestige" style="display:none;">
-      <div class="stats-panel prestige-panel">
-        <h2>🌟 Prestige</h2>
-        <p class="prestige-desc">Reset your garden for a permanent multiplier!</p>
-        <div class="stat-row"><span>Current Prestige</span><span id="prestigeLevel">0</span></div>
-        <div class="stat-row"><span>Multiplier</span><span id="prestigeMultiplier">1x</span></div>
-        <div class="stat-row prestige-required">
-          <span>Required for next</span>
-          <span id="prestigeRequired">1,000</span>
-        </div>
-        <div class="stat-row prestige-gain">
-          <span>Will gain</span>
-          <span id="prestigeGain">+1</span>
-        </div>
-        <button class="btn prestige-btn" id="prestigeBtn">Prestige</button>
-      </div>
-    </div>
   </div>
 
   <div class="notification" id="notification"></div>
+  <div class="shop-refresh-notification" id="shopRefreshNotif">🏪 Stock refreshed!</div>
 
   <script src="js/game.js"></script>
 </body>
