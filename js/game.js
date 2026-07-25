@@ -12,6 +12,13 @@ const FRUITS = [
   { id: 'pineapple', name: 'Pineapple', emoji: '🍍', baseCost: 500000, baseIncome: 5000, cpc: 320, costMultiplier: 1.15, unlocked: false, minCost: 3000000 },
   { id: 'watermelon', name: 'Watermelon', emoji: '🍉', baseCost: 2000000, baseIncome: 15000, cpc: 640, costMultiplier: 1.15, unlocked: false, minCost: 10000000 },
   { id: 'coconut', name: 'Coconut', emoji: '🥥', baseCost: 5000000, baseIncome: 30000, cpc: 1000, costMultiplier: 1.15, unlocked: false, minCost: 25000000 },
+  // New exotic fruits
+  { id: 'dragonfruit', name: 'Dragon Fruit', emoji: '🐉', baseCost: 15000000, baseIncome: 60000, cpc: 2000, costMultiplier: 1.15, unlocked: false, minCost: 50000000, rarity: 'rare' },
+  { id: 'durian', name: 'Durian', emoji: '💀', baseCost: 40000000, baseIncome: 120000, cpc: 4000, costMultiplier: 1.15, unlocked: false, minCost: 150000000, rarity: 'rare' },
+  { id: 'passionfruit', name: 'Passion Fruit', emoji: '🔥', baseCost: 100000000, baseIncome: 250000, cpc: 8000, costMultiplier: 1.15, unlocked: false, minCost: 400000000, rarity: 'epic' },
+  { id: 'starfruit', name: 'Star Fruit', emoji: '⭐', baseCost: 300000000, baseIncome: 500000, cpc: 16000, costMultiplier: 1.15, unlocked: false, minCost: 1000000000, rarity: 'epic' },
+  { id: 'lychee', name: 'Lychee', emoji: '💎', baseCost: 800000000, baseIncome: 1000000, cpc: 32000, costMultiplier: 1.15, unlocked: false, minCost: 3000000000, rarity: 'legendary' },
+  { id: 'rambutan', name: 'Rambutan', emoji: '🧡', baseCost: 2000000000, baseIncome: 2000000, cpc: 64000, costMultiplier: 1.15, unlocked: false, minCost: 8000000000, rarity: 'legendary' },
 ];
 
 const SHOP_ITEMS = [
@@ -27,6 +34,61 @@ const SHOP_ITEMS = [
   { id: 'grape', chance: 0.005, minQty: 1, maxQty: 1, price: 100000 },
   { id: 'kiwi', chance: 0.003, minQty: 1, maxQty: 1, price: 200000 },
   { id: 'coconut', chance: 0.002, minQty: 1, maxQty: 1, price: 500000 },
+  { id: 'dragonfruit', chance: 0.001, minQty: 1, maxQty: 1, price: 2000000 },
+  { id: 'durian', chance: 0.0005, minQty: 1, maxQty: 1, price: 5000000 },
+  { id: 'passionfruit', chance: 0.0002, minQty: 1, maxQty: 1, price: 20000000 },
+  { id: 'starfruit', chance: 0.0001, minQty: 1, maxQty: 1, price: 50000000 },
+  { id: 'lychee', chance: 0.00005, minQty: 1, maxQty: 1, price: 200000000 },
+  { id: 'rambutan', chance: 0.00002, minQty: 1, maxQty: 1, price: 500000000 },
+];
+
+// Crystal cases
+const CRYSTAL_CASES = [
+  { id: 'basic', name: 'Basic Case', emoji: '📦', cost: 10, rewards: [
+    { type: 'coins', chance: 0.5, min: 100, max: 500 },
+    { type: 'crystals', chance: 0.3, min: 1, max: 3 },
+    { type: 'fruit', chance: 0.2, fruitIds: ['apple', 'banana', 'orange'], minQty: 1, maxQty: 3 }
+  ]},
+  { id: 'premium', name: 'Premium Case', emoji: '🎁', cost: 50, rewards: [
+    { type: 'coins', chance: 0.4, min: 1000, max: 5000 },
+    { type: 'crystals', chance: 0.35, min: 5, max: 15 },
+    { type: 'fruit', chance: 0.25, fruitIds: ['lemon', 'grape', 'strawberry'], minQty: 1, maxQty: 2 }
+  ]},
+  { id: 'rare', name: 'Rare Case', emoji: '💎', cost: 100, rewards: [
+    { type: 'coins', chance: 0.3, min: 5000, max: 20000 },
+    { type: 'crystals', chance: 0.4, min: 10, max: 30 },
+    { type: 'fruit', chance: 0.3, fruitIds: ['cherry', 'kiwi', 'mango', 'dragonfruit'], minQty: 1, maxQty: 1 }
+  ]},
+  { id: 'epic', name: 'Epic Case', emoji: '👑', cost: 250, rewards: [
+    { type: 'coins', chance: 0.2, min: 20000, max: 100000 },
+    { type: 'crystals', chance: 0.4, min: 25, max: 75 },
+    { type: 'fruit', chance: 0.4, fruitIds: ['pineapple', 'watermelon', 'durian', 'passionfruit'], minQty: 1, maxQty: 1 }
+  ]},
+  { id: 'legendary', name: 'Legendary Case', emoji: '🌟', cost: 500, rewards: [
+    { type: 'coins', chance: 0.15, min: 100000, max: 500000 },
+    { type: 'crystals', chance: 0.45, min: 50, max: 150 },
+    { type: 'fruit', chance: 0.4, fruitIds: ['coconut', 'starfruit', 'lychee', 'rambutan'], minQty: 1, maxQty: 1 }
+  ]},
+];
+
+// Time-based rewards
+const TIME_REWARDS = [
+  { minutes: 10, type: 'coins', amount: 500, message: '10 minutes played! +500 coins' },
+  { minutes: 20, type: 'crystals', amount: 5, message: '20 minutes played! +5 crystals' },
+  { minutes: 30, type: 'random_fruit', message: '30 minutes played! Random fruit!' },
+  { minutes: 60, type: 'crystals', amount: 15, message: '1 hour played! +15 crystals' },
+  { minutes: 120, type: 'rare_fruit', message: '2 hours played! Rare fruit!' },
+];
+
+// Daily rewards
+const DAILY_REWARDS = [
+  { day: 1, type: 'coins', amount: 100, emoji: '🪙' },
+  { day: 2, type: 'crystals', amount: 2, emoji: '💎' },
+  { day: 3, type: 'coins', amount: 500, emoji: '🪙' },
+  { day: 4, type: 'crystals', amount: 5, emoji: '💎' },
+  { day: 5, type: 'fruit', fruitId: 'strawberry', emoji: '🍓' },
+  { day: 6, type: 'crystals', amount: 10, emoji: '💎' },
+  { day: 7, type: 'rare_fruit', emoji: '🌟' },
 ];
 
 function createRNG(seed) {
@@ -61,17 +123,34 @@ class Game {
     this.saveInterval = null;
     this.audioCtx = null;
 
+    // New: Crystals
+    this.crystals = 0;
+    this.totalCrystals = 0;
+    this.crystalDropChance = 0.03; // 3%
+
+    // New: Session time rewards
+    this.sessionStartTime = Date.now();
+    this.claimedTimeRewards = [];
+
+    // New: Daily rewards
+    this.lastLoginDate = null;
+    this.loginStreak = 0;
+    this.lastDailyRewardDate = null;
+    this.claimedDailyRewardToday = false;
+
     this.currentStock = [];
     this.lastStockSeed = -1;
     this.shopStock = [];
     this.fruitCounts[0] = 1;
     this.recalculate();
     this.load();
+    this.checkDailyReward();
     this.generateStock();
     this.setupEventListeners();
     this.renderFruits();
     this.updateUI();
     this.startTimers();
+    this.checkTimeRewards();
     this.showTab('garden');
   }
 
@@ -125,6 +204,14 @@ class Game {
     this.spawnParticles(x - rect.left, y - rect.top);
     this.spawnCoinPopup(x - rect.left, y - rect.top);
 
+    // Crystal drop chance (3%)
+    if (Math.random() < this.crystalDropChance) {
+      const crystals = Math.floor(Math.random() * 3) + 1;
+      this.crystals += crystals;
+      this.totalCrystals += crystals;
+      this.spawnCrystalPopup(x - rect.left, y - rect.top, crystals);
+    }
+
     const fruitEl = document.getElementById('clickFruit');
     fruitEl.classList.remove('pulse');
     void fruitEl.offsetWidth;
@@ -162,6 +249,23 @@ class Game {
     setTimeout(() => p.remove(), 1000);
   }
 
+  spawnCrystalPopup(x, y, amount) {
+    const container = document.getElementById('particleContainer');
+    const p = document.createElement('div');
+    p.className = 'crystal-particle';
+    p.textContent = '💎+' + amount;
+    p.style.left = (x + (Math.random() - 0.5) * 60) + 'px';
+    p.style.top = (y - 50) + 'px';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+    this.playCrystalSound();
+  }
+
+  playCrystalSound() {
+    this.playTone(1200, 0.1);
+    setTimeout(() => this.playTone(1500, 0.15), 80);
+  }
+
   flashCard(index) {
     const cards = document.querySelectorAll('.fruit-card');
     if (cards[index]) {
@@ -184,14 +288,16 @@ class Game {
       const unlocked = fruit.unlocked || this.totalCoins >= fruit.minCost;
       const affordable = this.coins >= cost;
 
+      const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
       const card = document.createElement('div');
-      card.className = 'fruit-card' + (unlocked ? ' affordable' : ' locked');
+      card.className = 'fruit-card' + (unlocked ? ' affordable' : ' locked') + rarityClass;
       card.innerHTML = `
         <div class="fruit-card-emoji">${fruit.emoji}</div>
         <div class="fruit-card-info">
           <div class="fruit-card-name">
             ${fruit.name}
             ${count > 0 ? '<span class="fruit-card-count">' + count + '</span>' : ''}
+            ${fruit.rarity ? '<span class="fruit-rarity-tag ' + fruit.rarity + '">' + fruit.rarity.toUpperCase() + '</span>' : ''}
           </div>
           <div class="fruit-card-income">+${income.toFixed(0)}/sec</div>
           <div class="fruit-card-cost">
@@ -220,6 +326,12 @@ class Game {
     document.getElementById('incomeDisplay').textContent = this.formatNumber(this.incomePerSecond, 1) + '/sec';
     document.getElementById('clickPowerDisplay').textContent = '+' + this.formatNumber(this.clickPower);
 
+    // Update crystal display
+    const crystalDisplay = document.getElementById('crystalDisplay');
+    if (crystalDisplay) {
+      crystalDisplay.textContent = this.formatNumber(Math.floor(this.crystals));
+    }
+
     const totalFruits = this.getFruitsOwned();
     document.getElementById('fruitCount').textContent = totalFruits;
 
@@ -235,6 +347,8 @@ class Game {
       document.getElementById('statFruits').textContent = totalFruits;
       document.getElementById('statPrestige').textContent = this.prestigeLevel;
       document.getElementById('statPrestigeBonus').textContent = this.prestigeMultiplier + 'x';
+      document.getElementById('statCrystals').textContent = this.formatNumber(this.totalCrystals);
+      document.getElementById('statStreak').textContent = this.loginStreak + ' days';
     }
 
     const prestigeTab = this.currentTab === 'prestige';
@@ -251,6 +365,17 @@ class Game {
       btn.textContent = canPrestige ? 'Prestige' : 'Need ' + this.formatNumber(nextPrestige) + ' total';
     }
 
+    // Update cases tab
+    if (this.currentTab === 'cases') {
+      this.renderCases();
+    }
+
+    // Update time rewards
+    if (this.currentTab === 'rewards') {
+      this.renderTimeRewards();
+      this.renderDailyRewards();
+    }
+
     this.renderFruits();
   }
 
@@ -260,14 +385,22 @@ class Game {
       btn.classList.toggle('active', btn.dataset.tab === tab);
     });
     document.getElementById('tabStats').style.display = tab === 'stats' ? 'block' : 'none';
-    document.getElementById('tabPrestige').style.display = tab === 'prestige' ? 'block' : 'none';
     document.getElementById('tabShop').style.display = tab === 'shop' ? 'block' : 'none';
+    document.getElementById('tabCases').style.display = tab === 'cases' ? 'block' : 'none';
+    document.getElementById('tabRewards').style.display = tab === 'rewards' ? 'block' : 'none';
     document.getElementById('main').style.display = tab === 'garden' ? 'block' : 'none';
     if (tab === 'garden') {
       this.updateUI();
     }
     if (tab === 'shop') {
       this.renderShop();
+    }
+    if (tab === 'cases') {
+      this.renderCases();
+    }
+    if (tab === 'rewards') {
+      this.renderTimeRewards();
+      this.renderDailyRewards();
     }
   }
 
@@ -383,6 +516,261 @@ class Game {
     });
   }
 
+  // ===== CRYSTAL CASES =====
+  renderCases() {
+    const list = document.getElementById('casesList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    CRYSTAL_CASES.forEach((caseItem, i) => {
+      const canBuy = this.crystals >= caseItem.cost;
+      const rarityClass = caseItem.id === 'legendary' ? ' legendary' : 
+                          caseItem.id === 'epic' ? ' epic' : 
+                          caseItem.id === 'rare' ? ' rare' : '';
+
+      const card = document.createElement('div');
+      card.className = 'case-item' + rarityClass;
+      card.innerHTML = `
+        <div class="case-emoji">${caseItem.emoji}</div>
+        <div class="case-info">
+          <div class="case-name">${caseItem.name}</div>
+          <div class="case-cost">💎 ${caseItem.cost}</div>
+        </div>
+        <button class="case-btn" data-case-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Open' : 'Need more'}</button>
+      `;
+
+      const btn = card.querySelector('.case-btn');
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.buyCase(i);
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  buyCase(index) {
+    const caseItem = CRYSTAL_CASES[index];
+    if (!caseItem || this.crystals < caseItem.cost) return;
+
+    this.crystals -= caseItem.cost;
+    
+    // Pick a random reward
+    const roll = Math.random();
+    let cumulativeChance = 0;
+    let reward = null;
+    
+    for (const r of caseItem.rewards) {
+      cumulativeChance += r.chance;
+      if (roll < cumulativeChance) {
+        reward = r;
+        break;
+      }
+    }
+
+    if (!reward) reward = caseItem.rewards[0];
+
+    let rewardText = '';
+    
+    if (reward.type === 'coins') {
+      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+      this.coins += amount;
+      this.totalCoins += amount;
+      rewardText = '🪙 +' + this.formatNumber(amount) + ' coins!';
+    } else if (reward.type === 'crystals') {
+      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+      this.crystals += amount;
+      this.totalCrystals += amount;
+      rewardText = '💎 +' + amount + ' crystals!';
+    } else if (reward.type === 'fruit') {
+      const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
+      const fruit = this.getFruitById(fruitId);
+      const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
+      const fruitIdx = FRUITS.indexOf(fruit);
+      this.fruitCounts[fruitIdx] += qty;
+      fruit.unlocked = true;
+      rewardText = fruit.emoji + ' +' + qty + ' ' + fruit.name + '!';
+      this.recalculate();
+    }
+
+    this.updateUI();
+    this.playCrystalSound();
+    this.showNotification('📦 ' + caseItem.name + ': ' + rewardText);
+  }
+
+  // ===== TIME-BASED REWARDS =====
+  checkTimeRewards() {
+    const elapsed = Math.floor((Date.now() - this.sessionStartTime) / 60000); // minutes
+    
+    TIME_REWARDS.forEach((reward, i) => {
+      if (elapsed >= reward.minutes && !this.claimedTimeRewards.includes(reward.minutes)) {
+        this.claimedTimeRewards.push(reward.minutes);
+        this.grantTimeReward(reward);
+      }
+    });
+  }
+
+  grantTimeReward(reward) {
+    if (reward.type === 'coins') {
+      this.coins += reward.amount;
+      this.totalCoins += reward.amount;
+    } else if (reward.type === 'crystals') {
+      this.crystals += reward.amount;
+      this.totalCrystals += reward.amount;
+    } else if (reward.type === 'random_fruit') {
+      const idx = Math.floor(Math.random() * 13); // Basic fruits
+      this.fruitCounts[idx]++;
+      FRUITS[idx].unlocked = true;
+      this.recalculate();
+    } else if (reward.type === 'rare_fruit') {
+      const rareFruits = FRUITS.filter(f => f.rarity);
+      const fruit = rareFruits[Math.floor(Math.random() * rareFruits.length)];
+      const idx = FRUITS.indexOf(fruit);
+      this.fruitCounts[idx]++;
+      fruit.unlocked = true;
+      this.recalculate();
+    }
+    
+    this.showNotification('🎁 ' + reward.message);
+    this.updateUI();
+  }
+
+  renderTimeRewards() {
+    const container = document.getElementById('timeRewards');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const elapsed = Math.floor((Date.now() - this.sessionStartTime) / 60000);
+
+    TIME_REWARDS.forEach(reward => {
+      const claimed = this.claimedTimeRewards.includes(reward.minutes);
+      const timeStr = reward.minutes >= 60 ? (reward.minutes / 60) + 'h' : reward.minutes + 'm';
+      
+      const card = document.createElement('div');
+      card.className = 'reward-item' + (claimed ? ' claimed' : elapsed >= reward.minutes ? ' available' : '');
+      
+      const icon = reward.type === 'coins' ? '🪙' : 
+                   reward.type === 'crystals' ? '💎' : 
+                   reward.type === 'random_fruit' ? '🍎' : '🌟';
+      const amount = reward.amount ? reward.amount : '';
+      
+      card.innerHTML = `
+        <div class="reward-icon">${claimed ? '✅' : icon}</div>
+        <div class="reward-info">
+          <div class="reward-time">${timeStr}</div>
+          <div class="reward-amount">${amount ? '+' + amount : ''} ${reward.type.replace('_', ' ')}</div>
+        </div>
+        <button class="claim-btn" ${!claimed && elapsed >= reward.minutes ? '' : 'disabled'}>
+          ${claimed ? 'Claimed' : elapsed >= reward.minutes ? 'Claim!' : timeStr}
+        </button>
+      `;
+
+      if (!claimed && elapsed >= reward.minutes) {
+        const btn = card.querySelector('.claim-btn');
+        btn.addEventListener('click', () => {
+          this.claimedTimeRewards.push(reward.minutes);
+          this.grantTimeReward(reward);
+          this.renderTimeRewards();
+        });
+      }
+
+      container.appendChild(card);
+    });
+  }
+
+  // ===== DAILY REWARDS =====
+  checkDailyReward() {
+    const today = new Date().toDateString();
+    
+    if (this.lastLoginDate === today) {
+      this.claimedDailyRewardToday = true;
+      return;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (this.lastLoginDate === yesterday.toDateString()) {
+      this.loginStreak++;
+    } else if (this.lastLoginDate !== today) {
+      this.loginStreak = 1;
+    }
+
+    this.lastLoginDate = today;
+    this.claimedDailyRewardToday = false;
+  }
+
+  renderDailyRewards() {
+    const container = document.getElementById('dailyRewards');
+    if (!container) return;
+    container.innerHTML = '';
+
+    DAILY_REWARDS.forEach((reward, i) => {
+      const dayInCycle = ((this.loginStreak - 1) % 7) + 1;
+      const isToday = reward.day === dayInCycle && !this.claimedDailyRewardToday;
+      const isPast = reward.day < dayInCycle;
+      const isClaimed = reward.day < dayInCycle || (reward.day === dayInCycle && this.claimedDailyRewardToday);
+      
+      const card = document.createElement('div');
+      card.className = 'daily-reward-item' + (isToday ? ' today' : isPast ? ' past' : '');
+      
+      const rewardDisplay = reward.type === 'coins' ? '🪙 ' + reward.amount :
+                           reward.type === 'crystals' ? '💎 ' + reward.amount :
+                           reward.emoji;
+      
+      card.innerHTML = `
+        <div class="daily-day">Day ${reward.day}</div>
+        <div class="daily-icon">${isPast ? '✅' : rewardDisplay}</div>
+        <div class="daily-label">${isToday ? 'TODAY!' : isPast ? 'Done' : 'Locked'}</div>
+      `;
+
+      if (isToday && !this.claimedDailyRewardToday) {
+        card.addEventListener('click', () => this.claimDailyReward(reward));
+        card.style.cursor = 'pointer';
+      }
+
+      container.appendChild(card);
+    });
+
+    // Update streak display
+    const streakEl = document.getElementById('streakDisplay');
+    if (streakEl) {
+      streakEl.textContent = '🔥 ' + this.loginStreak + ' day streak';
+    }
+  }
+
+  claimDailyReward(reward) {
+    if (this.claimedDailyRewardToday) return;
+
+    this.claimedDailyRewardToday = true;
+
+    if (reward.type === 'coins') {
+      this.coins += reward.amount;
+      this.totalCoins += reward.amount;
+    } else if (reward.type === 'crystals') {
+      this.crystals += reward.amount;
+      this.totalCrystals += reward.amount;
+    } else if (reward.type === 'fruit') {
+      const fruit = this.getFruitById(reward.fruitId);
+      const idx = FRUITS.indexOf(fruit);
+      this.fruitCounts[idx]++;
+      fruit.unlocked = true;
+      this.recalculate();
+    } else if (reward.type === 'rare_fruit') {
+      const rareFruits = FRUITS.filter(f => f.rarity);
+      const fruit = rareFruits[Math.floor(Math.random() * rareFruits.length)];
+      const idx = FRUITS.indexOf(fruit);
+      this.fruitCounts[idx]++;
+      fruit.unlocked = true;
+      this.recalculate();
+    }
+
+    this.updateUI();
+    this.playCrystalSound();
+    this.showNotification('🎁 Daily Reward: ' + reward.emoji + ' Claimed! Streak: ' + this.loginStreak + ' days');
+    this.renderDailyRewards();
+  }
+
   showNotification(msg) {
     const el = document.getElementById('notification');
     el.textContent = msg;
@@ -410,7 +798,15 @@ class Game {
       prestigeLevel: this.prestigeLevel,
       prestigeMultiplier: this.prestigeMultiplier,
       fruitCounts: this.fruitCounts,
-      lastSave: Date.now()
+      lastSave: Date.now(),
+      // New save data
+      crystals: this.crystals,
+      totalCrystals: this.totalCrystals,
+      lastLoginDate: this.lastLoginDate,
+      loginStreak: this.loginStreak,
+      claimedDailyRewardToday: this.claimedDailyRewardToday,
+      claimedTimeRewards: this.claimedTimeRewards,
+      sessionStartTime: this.sessionStartTime
     };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -432,6 +828,15 @@ class Game {
       const oldCounts = data.fruitCounts || [];
       this.fruitCounts = FRUITS.map((_, i) => oldCounts[i] || 0);
       this.fruitCounts[0] = Math.max(1, this.fruitCounts[0]);
+
+      // Load new data
+      this.crystals = data.crystals || 0;
+      this.totalCrystals = data.totalCrystals || 0;
+      this.lastLoginDate = data.lastLoginDate || null;
+      this.loginStreak = data.loginStreak || 0;
+      this.claimedDailyRewardToday = data.claimedDailyRewardToday || false;
+      this.claimedTimeRewards = data.claimedTimeRewards || [];
+      this.sessionStartTime = data.sessionStartTime || Date.now();
 
       if (data.lastSave) {
         const elapsedSec = (Date.now() - data.lastSave) / 1000;
@@ -512,6 +917,11 @@ class Game {
         }
       }
     }, 1000);
+
+    // Time rewards check every minute
+    this._timeRewardInterval = setInterval(() => {
+      this.checkTimeRewards();
+    }, 60000);
 
     this.saveInterval = setInterval(() => this.save(), 15000);
   }

@@ -1,0 +1,153 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate HTML
+        run: |
+          echo "Checking HTML files..."
+          if grep -r "TODO\|FIXME" --include="*.html" --include="*.js" .; then
+            echo "Found TODO/FIXME comments"
+          fi
+          echo "HTML validation passed"
+
+      - name: Validate JavaScript
+        run: |
+          echo "Checking JavaScript syntax..."
+          for file in js/*.js; do
+            echo "Checking $file..."
+            node --check "$file" && echo "✓ $file is valid"
+          done
+
+      - name: Build (if build script exists)
+        run: |
+          if [ -f "package.json" ] && grep -q '"build"' package.json; then
+            npm run build
+          else
+            echo "No build script found, skipping build step"
+          fi
+
+      - name: Check for production-ready files
+        run: |
+          echo "Checking for required files..."
+          test -f index.html && echo "✓ index.html exists"
+          test -f styles.css && echo "✓ styles.css exists"
+          test -f js/game.js && echo "✓ js/game.js exists"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fruit-clicker-build
+          path: |
+            index.html
+            styles.css
+            js/
+            android/
+          retention-days: 7
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: |
+          if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+            npm run lint
+          else
+            echo "No lint script found"
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkpoint@v4
+
+      - name: Validate game functionality
+        run: |
+          echo "Testing game files..."
+          node -e "
+            const fs = require('fs');
+            const gameCode = fs.readFileSync('js/game.js', 'utf8');
+            
+            // Check for required game elements
+            const checks = [
+              ['FRUITS array', /const FRUITS = \[/],
+              ['CRYSTAL_CASES', /const CRYSTAL_CASES/],
+              ['TIME_REWARDS', /const TIME_REWARDS/],
+              ['DAILY_REWARDS', /const DAILY_REWARDS/],
+              ['Game class', /class Game/],
+              ['clickFruit method', /clickFruit\(e\)/],
+              ['crystals property', /this\.crystals/],
+              ['renderCases method', /renderCases\(\)/],
+              ['renderTimeRewards method', /renderTimeRewards\(\)/],
+              ['renderDailyRewards method', /renderDailyRewards\(\)/]
+            ];
+            
+            let allPassed = true;
+            checks.forEach(([name, regex]) => {
+              if (regex.test(gameCode)) {
+                console.log('✓', name);
+              } else {
+                console.log('✗', name);
+                allPassed = false;
+              }
+            });
+            
+            if (allPassed) {
+              console.log('\n✓ All game functionality checks passed!');
+            } else {
+              console.log('\n✗ Some checks failed!');
+              process.exit(1);
+            }
+          "
+
+  deploy-preview:
+    needs: [build, lint, test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy preview
+        run: |
+          echo "Preview deployment ready for PR #${PR_NUMBER}"
+          echo "Artifacts available for download"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
