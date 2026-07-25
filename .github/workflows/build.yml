@@ -94,7 +94,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkpoint@v4
+        uses: actions/checkout@v4
 
       - name: Validate game functionality
         run: |
