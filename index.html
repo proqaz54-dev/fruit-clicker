@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -23,7 +23,7 @@
         </div>
         <div class="stat">
           <span class="stat-icon">⚡</span>
-          <span class="stat-value" id="incomeDisplay">0/sec</span>
+          <span class="stat-value" id="incomeDisplay">0/сек</span>
         </div>
         <div class="stat">
           <span class="stat-icon">👆</span>
@@ -40,13 +40,13 @@
         <div class="click-fruit-wrapper" id="clickFruitWrapper">
           <img class="click-fruit" id="clickFruit" src="images/game-avatar.jpg" alt="Game avatar" />
         </div>
-        <div class="click-hint" id="clickHint">Tap the fruit! 💎 3% chance for crystals!</div>
+        <div class="click-hint" id="clickHint">Натискай на фрукт! 💎 3% шанс для кристалів!</div>
         <div id="particleContainer"></div>
       </div>
 
       <section class="fruits-section">
         <div class="section-header">
-          <h2>Your Garden</h2>
+          <h2>Ваш Сад</h2>
           <span class="fruit-count" id="fruitCount">1</span>
         </div>
         <div class="fruits-list" id="fruitsList"></div>
@@ -56,82 +56,108 @@
     <footer id="footer">
       <div class="footer-btn active" data-tab="garden">
         <span>🌳</span>
-        <span class="footer-label">Garden</span>
+        <span class="footer-label">Сад</span>
       </div>
       <div class="footer-btn" data-tab="shop">
         <span>🏪</span>
-        <span class="footer-label">Shop</span>
+        <span class="footer-label">Магазин</span>
+      </div>
+      <div class="footer-btn" data-tab="inventory">
+        <span>🎒</span>
+        <span class="footer-label">Інвентар</span>
+      </div>
+      <div class="footer-btn" data-tab="upgrades">
+        <span>⬆️</span>
+        <span class="footer-label">Прокачка</span>
       </div>
       <div class="footer-btn" data-tab="cases">
         <span>📦</span>
-        <span class="footer-label">Cases</span>
+        <span class="footer-label">Кейси</span>
       </div>
       <div class="footer-btn" data-tab="rewards">
         <span>🎁</span>
-        <span class="footer-label">Rewards</span>
+        <span class="footer-label">Нагороди</span>
       </div>
       <div class="footer-btn" data-tab="stats">
         <span>📊</span>
-        <span class="footer-label">Stats</span>
+        <span class="footer-label">Стата</span>
       </div>
     </footer>
 
+    <!-- Shop Tab -->
     <div class="tab-content" id="tabShop" style="display:none;">
       <div class="shop-panel">
-        <div class="shop-header">
-          <h2>🏪 Global Stock</h2>
-          <div class="shop-timer" id="shopTimer">05:00</div>
-        </div>
-        <p class="shop-desc">Limited stock refreshes every 5 minutes for all players!</p>
+        <h2>🏪 Магазин</h2>
         <div class="shop-list" id="shopList"></div>
       </div>
     </div>
 
+    <!-- Inventory Tab -->
+    <div class="tab-content" id="tabInventory" style="display:none;">
+      <div class="inventory-panel">
+        <h2>🎒 Інвентар</h2>
+        <p class="inventory-desc">Всі ваші придбані фрукти</p>
+        <div class="inventory-list" id="inventoryList"></div>
+      </div>
+    </div>
+
+    <!-- Upgrades Tab -->
+    <div class="tab-content" id="tabUpgrades" style="display:none;">
+      <div class="upgrades-panel">
+        <h2>⬆️ Прокачка</h2>
+        <p class="upgrades-desc">Покращуйте свої здібності!</p>
+        <div class="upgrades-list" id="upgradesList"></div>
+      </div>
+    </div>
+
+    <!-- Cases Tab -->
     <div class="tab-content" id="tabCases" style="display:none;">
       <div class="cases-panel">
-        <h2>📦 Crystal Cases</h2>
-        <p class="cases-desc">Open cases to win coins, crystals, and rare fruits!</p>
+        <h2>📦 Кейси з Кристалів</h2>
+        <p class="cases-desc">Відкривайте кейси щоб виграти монети, кристали та рідкісні фрукти!</p>
         <div class="cases-list" id="casesList"></div>
       </div>
     </div>
 
+    <!-- Rewards Tab -->
     <div class="tab-content" id="tabRewards" style="display:none;">
       <div class="rewards-panel">
-        <h2>🎁 Rewards</h2>
+        <h2>🎁 Нагороди</h2>
         
         <div class="rewards-section">
-          <h3>⏱️ Time Rewards</h3>
-          <p class="rewards-subtitle">Play longer to earn rewards!</p>
+          <h3>⏱️ Часові Нагороди</h3>
+          <p class="rewards-subtitle">Грайте довше щоб отримати нагороди!</p>
           <div id="timeRewards" class="rewards-list"></div>
         </div>
 
         <div class="rewards-section">
-          <h3>📅 Daily Rewards</h3>
-          <p class="streak-display" id="streakDisplay">🔥 0 day streak</p>
+          <h3>📅 Щоденні Нагороди</h3>
+          <p class="streak-display" id="streakDisplay">🔥 0 днів серія</p>
           <div id="dailyRewards" class="daily-rewards-list"></div>
         </div>
       </div>
     </div>
 
+    <!-- Stats Tab -->
     <div class="tab-content" id="tabStats" style="display:none;">
       <div class="stats-panel">
-        <h2>Statistics</h2>
-        <div class="stat-row"><span>Total Coins Earned</span><span id="statTotalCoins">0</span></div>
-        <div class="stat-row"><span>Total Clicks</span><span id="statTotalClicks">0</span></div>
-        <div class="stat-row"><span>Click Power</span><span id="statClickPower">1</span></div>
-        <div class="stat-row"><span>Income / Sec</span><span id="statIncome">0</span></div>
-        <div class="stat-row"><span>Fruits Owned</span><span id="statFruits">1</span></div>
-        <div class="stat-row"><span>Total Crystals</span><span id="statCrystals">0</span></div>
-        <div class="stat-row"><span>Login Streak</span><span id="statStreak">0 days</span></div>
-        <div class="stat-row"><span>Prestige Level</span><span id="statPrestige">0</span></div>
-        <div class="stat-row"><span>Prestige Bonus</span><span id="statPrestigeBonus">0x</span></div>
-        <button class="btn danger" id="resetBtn">Reset All Progress</button>
+        <h2>📊 Статистика</h2>
+        <div class="stat-row"><span>Всього Монет</span><span id="statTotalCoins">0</span></div>
+        <div class="stat-row"><span>Всього Кліків</span><span id="statTotalClicks">0</span></div>
+        <div class="stat-row"><span>Сила Кліку</span><span id="statClickPower">1</span></div>
+        <div class="stat-row"><span>Дохід / Сек</span><span id="statIncome">0</span></div>
+        <div class="stat-row"><span>Фруктів</span><span id="statFruits">1</span></div>
+        <div class="stat-row"><span>Всього Кристалів</span><span id="statCrystals">0</span></div>
+        <div class="stat-row"><span>Серія Днів</span><span id="statStreak">0 днів</span></div>
+        <div class="stat-row"><span>Prestige Рівень</span><span id="statPrestige">0</span></div>
+        <div class="stat-row"><span>Prestige Бонус</span><span id="statPrestigeBonus">0x</span></div>
+        <button class="btn danger" id="resetBtn">Скинути Весь Прогрес</button>
       </div>
     </div>
   </div>
 
   <div class="notification" id="notification"></div>
-  <div class="shop-refresh-notification" id="shopRefreshNotif">🏪 Stock refreshed!</div>
+  <div class="shop-refresh-notification" id="shopRefreshNotif">🏪 Сток оновлено!</div>
 
   <script src="js/game.js"></script>
 </body>

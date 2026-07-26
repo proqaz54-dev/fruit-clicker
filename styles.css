@@ -1099,3 +1099,557 @@ html, body {
     font-size: 18px;
   }
 }
+
+/* ===== INVENTORY ===== */
+.inventory-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.inventory-panel h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.inventory-desc {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.inventory-item.exclusive {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
+}
+
+.inventory-emoji {
+  font-size: 36px;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+
+.inventory-info {
+  flex: 1;
+}
+
+.inventory-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.inventory-details {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.inv-count, .inv-level {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.inv-level {
+  color: var(--secondary);
+}
+
+.inventory-income {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.empty-inventory {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===== UPGRADES ===== */
+.upgrades-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.upgrades-panel h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.upgrades-desc {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.upgrades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upgrade-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.upgrade-item.affordable {
+  border-color: rgba(6, 214, 160, 0.3);
+  background: rgba(6, 214, 160, 0.05);
+}
+
+.upgrade-item.maxed {
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.upgrade-emoji {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+.upgrade-info {
+  flex: 1;
+}
+
+.upgrade-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.upgrade-level {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.upgrade-effect {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.upgrade-action {
+  text-align: right;
+}
+
+.upgrade-cost {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 4px;
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, var(--accent), #05B88A);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.upgrade-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.upgrade-btn:disabled {
+  opacity: 0.3;
+  transform: none !important;
+  cursor: not-allowed;
+}
+
+.maxed-label {
+  background: linear-gradient(135deg, var(--rare), #FFA500);
+  color: #1A0A3E;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== SHOP SECTIONS ===== */
+.shop-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 20px 0 12px;
+  color: var(--secondary);
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 8px;
+}
+
+.shop-section-title:first-child {
+  margin-top: 0;
+}
+
+.shop-timer-display {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.exclusive-desc {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* ===== PURCHASES ===== */
+.purchase-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.purchase-emoji {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.purchase-info {
+  flex: 1;
+}
+
+.purchase-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.purchase-amount {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.purchase-btn {
+  background: linear-gradient(135deg, #10B981, #059669);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.purchase-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== EXCLUSIVE ITEMS ===== */
+.exclusive-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.05));
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.exclusive-item.owned {
+  border-color: rgba(6, 214, 160, 0.3);
+  background: rgba(6, 214, 160, 0.05);
+}
+
+.exclusive-emoji {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.exclusive-info {
+  flex: 1;
+}
+
+.exclusive-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rare);
+}
+
+.exclusive-income {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.exclusive-btn {
+  background: linear-gradient(135deg, var(--rare), #FFA500);
+  border: none;
+  color: #1A0A3E;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.exclusive-btn:active {
+  transform: scale(0.95);
+}
+
+.owned-label {
+  background: rgba(6, 214, 160, 0.2);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== FRUIT LEVEL ===== */
+.fruit-level {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--secondary);
+  background: rgba(255, 209, 102, 0.2);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.upgrade-btn-inline {
+  background: linear-gradient(135deg, var(--accent), #05B88A);
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: 8px;
+}
+
+.upgrade-btn-inline:active {
+  transform: scale(0.95);
+}
+
+/* ===== CASES ===== */
+.cases-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.cases-panel h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.cases-desc {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.cases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.case-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.case-item.rare {
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.case-item.epic {
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.case-item.legendary {
+  border-color: rgba(255, 107, 107, 0.3);
+  animation: legendaryCardGlow 3s ease-in-out infinite;
+}
+
+.case-emoji {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.case-info {
+  flex: 1;
+}
+
+.case-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.case-cost {
+  font-size: 12px;
+  color: var(--crystal);
+  margin-top: 2px;
+}
+
+.case-btn {
+  background: linear-gradient(135deg, var(--crystal), var(--crystal-dark));
+  border: none;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.case-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.case-btn:disabled {
+  opacity: 0.3;
+  transform: none !important;
+}
+
+/* ===== REWARDS ===== */
+.rewards-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.rewards-panel h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.rewards-section {
+  margin-bottom: 24px;
+}
+
+.rewards-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--secondary);
+}
+
+.rewards-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.reward-item.available {
+  border-color: rgba(6, 214, 160, 0.3);
+  background: rgba(6, 214, 160, 0.05);
+}
+
+.reward-item.claimed {
+  opacity: 0.4;
+}
+
+.reward-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+}
+
+.reward-info {
+  flex: 1;
+}
+
+.reward-time {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reward-amount {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.streak-display {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
