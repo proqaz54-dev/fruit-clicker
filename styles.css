@@ -1400,6 +1400,17 @@ html, body {
   background: rgba(6, 214, 160, 0.05);
 }
 
+.exclusive-item.auto-clicker:not(.owned) {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  animation: autoClickerGlow 2s ease-in-out infinite;
+}
+
+@keyframes autoClickerGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+}
+
 .exclusive-emoji {
   font-size: 36px;
   flex-shrink: 0;

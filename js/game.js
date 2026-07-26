@@ -27,6 +27,7 @@ const EXCLUSIVE_FRUITS = [
   { id: 'rainbowberry', name: 'Rainbow Berry', emoji: '🌈', price: 99, baseIncome: 25000, cpc: 2500, rarity: 'exclusive' },
   { id: 'crystalpear', name: 'Crystal Pear', emoji: '💧', price: 99, baseIncome: 50000, cpc: 5000, rarity: 'exclusive' },
   { id: 'phoenixfruit', name: 'Phoenix Fruit', emoji: '🦅', price: 99, baseIncome: 100000, cpc: 10000, rarity: 'exclusive' },
+  { id: 'autoclicker', name: 'Auto Clicker', emoji: '🤖', price: 99, baseIncome: 0, cpc: 0, rarity: 'exclusive', isAutoClicker: true },
 ];
 
 // Upgrades system
@@ -152,6 +153,10 @@ class Game {
     // Exclusive fruits owned
     this.exclusiveFruits = [];
     this.purchasedExclusiveIds = [];
+    
+    // Auto clicker
+    this.autoClickerActive = false;
+    this.autoClickerInterval = null;
 
     // Session time rewards
     this.sessionStartTime = Date.now();
@@ -287,36 +292,73 @@ class Game {
   buyExclusiveFruit(exclusive) {
     if (this.purchasedExclusiveIds.includes(exclusive.id)) return;
     
+    let description = '';
+    if (exclusive.isAutoClicker) {
+      description = 'Automatically clicks 10 times per second!';
+    } else {
+      description = 'Income: ' + this.formatNumber(exclusive.baseIncome) + '/sec';
+    }
+    
     // Show payment dialog
-    const confirmed = confirm(exclusive.emoji + ' ' + exclusive.name + '\n\nЦіна: ' + exclusive.price + ' грн\n\nДохід: ' + this.formatNumber(exclusive.baseIncome) + '/сек\n\nДля покупки потрібна інтеграція з платіжною системою.\n\nЦе демо-версія - натисніть OK щоб придбати (безкоштовно в демо).');
+    const confirmed = confirm(exclusive.emoji + ' ' + exclusive.name + '\n\nPrice: ' + exclusive.price + ' UAH\n\n' + description + '\n\nPayment integration required.\n\nDemo version - press OK to purchase (free in demo).');
     
     if (confirmed) {
       this.purchasedExclusiveIds.push(exclusive.id);
       this.exclusiveFruits.push({ ...exclusive, level: 1 });
+      
+      // Activate auto clicker if purchased
+      if (exclusive.isAutoClicker) {
+        this.activateAutoClicker();
+      }
+      
       this.recalculate();
       this.renderShop();
       this.updateUI();
-      this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' придбано!');
+      this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased!');
+    }
+  }
+
+  activateAutoClicker() {
+    if (this.autoClickerActive) return;
+    this.autoClickerActive = true;
+    
+    this.autoClickerInterval = setInterval(() => {
+      // Simulate clicks
+      for (let i = 0; i < 10; i++) {
+        this.coins += this.clickPower;
+        this.totalCoins += this.clickPower;
+      }
+      this.updateUI();
+    }, 1000);
+    
+    this.showNotification('🤖 Auto Clicker activated!');
+  }
+
+  deactivateAutoClicker() {
+    this.autoClickerActive = false;
+    if (this.autoClickerInterval) {
+      clearInterval(this.autoClickerInterval);
+      this.autoClickerInterval = null;
     }
   }
 
   buyCoins(amount) {
-    const confirmed = confirm('🪙 Купити ' + this.formatNumber(amount) + ' монет\n\nЦіна: 199 грн\n\nЦе демо-версія - натисніть OK щоб отримати монети (безкоштовно в демо).');
+    const confirmed = confirm('🪙 Buy ' + this.formatNumber(amount) + ' coins\n\nPrice: 199 UAH\n\nDemo version - press OK to get coins (free in demo).');
     if (confirmed) {
       this.coins += amount;
       this.totalCoins += amount;
       this.updateUI();
-      this.showNotification('🪙 +' + this.formatNumber(amount) + ' монет отримано!');
+      this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins received!');
     }
   }
 
   buyCrystals(amount) {
-    const confirmed = confirm('💎 Купити ' + amount + ' кристалів\n\nЦіна: 199 грн\n\nЦе демо-версія - натисніть OK щоб отримати кристали (безкоштовно в демо).');
+    const confirmed = confirm('💎 Buy ' + amount + ' crystals\n\nPrice: 199 UAH\n\nDemo version - press OK to get crystals (free in demo).');
     if (confirmed) {
       this.crystals += amount;
       this.totalCrystals += amount;
       this.updateUI();
-      this.showNotification('💎 +' + amount + ' кристалів отримано!');
+      this.showNotification('💎 +' + amount + ' crystals received!');
     }
   }
 
@@ -587,7 +629,7 @@ class Game {
     const ownedFruits = FRUITS.filter((f, i) => this.fruitCounts[i] > 0);
     
     if (ownedFruits.length === 0 && this.exclusiveFruits.length === 0) {
-      container.innerHTML = '<div class="empty-inventory">🔒 Купіть фрукти щоб побачити їх в інвентарі!</div>';
+      container.innerHTML = '<div class="empty-inventory">🔒 Buy fruits to see them in your inventory!</div>';
       return;
     }
 
@@ -674,7 +716,7 @@ class Game {
           ${maxed ? '<span class="maxed-label">MAX</span>' : `
             <div class="upgrade-cost">🪙 ${this.formatNumber(cost)}</div>
             <button class="upgrade-btn" data-upgrade-id="${upgrade.id}" ${!canAfford ? 'disabled' : ''}>
-              ${canAfford ? 'Прокачати' : 'Не вистачає'}
+              ${canAfford ? 'Upgrade' : 'Need more'}
             </button>
           `}
         </div>
@@ -729,12 +771,12 @@ class Game {
     if (!list) return;
     list.innerHTML = '';
 
-    // === GLOBAL STOCK SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">🌍 Глобальний Сток</h3>';
-    list.innerHTML += '<p class="shop-timer-display">⏰ Оновлення через: <span id="shopTimer">05:00</span></p>';
+          // === GLOBAL STOCK SECTION ===
+    list.innerHTML += '<h3 class="shop-section-title">🌍 Global Stock</h3>';
+    list.innerHTML += '<p class="shop-timer-display">⏰ Refresh in: <span id="shopTimer">05:00</span></p>';
 
     if (this.shopStock.length === 0) {
-      list.innerHTML += '<div class="shop-empty"><span>📭</span>Немає товарів в цьому циклі.<br>Перевірте через 5 хвилин!</div>';
+      list.innerHTML += '<div class="shop-empty"><span>📭</span>No items in stock this cycle.<br>Check back in 5 minutes!</div>';
     } else {
       this.shopStock.forEach((item, i) => {
         const fruit = this.getFruitById(item.id);
@@ -749,10 +791,10 @@ class Game {
           <div class="shop-item-emoji">${fruit.emoji}</div>
           <div class="shop-item-info">
             <div class="shop-item-name">${fruit.name}</div>
-            <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Залишилось: ${item.remaining}</div>
+            <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Left: ${item.remaining}</div>
           </div>
           <div class="shop-item-price">🪙 ${this.formatNumber(item.price)}</div>
-          <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Купити' : item.remaining <= 0 ? 'Продано' : 'Не вистачає'}</button>
+          <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold' : 'Need more'}</button>
         `;
 
         const btn = card.querySelector('.shop-btn');
@@ -766,7 +808,7 @@ class Game {
     }
 
     // === PURCHASES SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">💳 Покупки</h3>';
+    list.innerHTML += '<h3 class="shop-section-title">💳 Purchases</h3>';
     
     // Coins purchase
     const coinsCard = document.createElement('div');
@@ -774,10 +816,10 @@ class Game {
     coinsCard.innerHTML = `
       <div class="purchase-emoji">🪙</div>
       <div class="purchase-info">
-        <div class="purchase-name">Монети</div>
-        <div class="purchase-amount">1,000,000 монет</div>
+        <div class="purchase-name">Coins</div>
+        <div class="purchase-amount">1,000,000 coins</div>
       </div>
-      <button class="purchase-btn" onclick="game.buyCoins(1000000)">199 грн</button>
+      <button class="purchase-btn" onclick="game.buyCoins(1000000)">199 UAH</button>
     `;
     list.appendChild(coinsCard);
 
@@ -787,28 +829,36 @@ class Game {
     crystalsCard.innerHTML = `
       <div class="purchase-emoji">💎</div>
       <div class="purchase-info">
-        <div class="purchase-name">Кристали</div>
-        <div class="purchase-amount">1000 кристалів</div>
+        <div class="purchase-name">Crystals</div>
+        <div class="purchase-amount">1000 crystals</div>
       </div>
-      <button class="purchase-btn" onclick="game.buyCrystals(1000)">199 грн</button>
+      <button class="purchase-btn" onclick="game.buyCrystals(1000)">199 UAH</button>
     `;
     list.appendChild(crystalsCard);
 
     // === EXCLUSIVE FRUITS SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">👑 Ексклюзивні Фрукти</h3>';
-    list.innerHTML += '<p class="exclusive-desc">Можна придбати лише за реальні гроші!</p>';
+    list.innerHTML += '<h3 class="shop-section-title">👑 Exclusive Items</h3>';
+    list.innerHTML += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
     
     EXCLUSIVE_FRUITS.forEach(exclusive => {
       const owned = this.purchasedExclusiveIds.includes(exclusive.id);
       const card = document.createElement('div');
-      card.className = 'exclusive-item' + (owned ? ' owned' : '');
+      card.className = 'exclusive-item' + (owned ? ' owned' : '') + (exclusive.isAutoClicker ? ' auto-clicker' : '');
+      
+      let itemDesc = '';
+      if (exclusive.isAutoClicker) {
+        itemDesc = '🤖 +10 clicks/sec';
+      } else {
+        itemDesc = '+' + this.formatNumber(exclusive.baseIncome) + '/sec';
+      }
+      
       card.innerHTML = `
         <div class="exclusive-emoji">${exclusive.emoji}</div>
         <div class="exclusive-info">
           <div class="exclusive-name">${exclusive.name}</div>
-          <div class="exclusive-income">+${this.formatNumber(exclusive.baseIncome)}/сек</div>
+          <div class="exclusive-income">${itemDesc}</div>
         </div>
-        ${owned ? '<span class="owned-label">✅ Придбано</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' грн</button>'}
+        ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' UAH</button>'}
       `;
       
       if (!owned) {
@@ -1115,7 +1165,8 @@ class Game {
       sessionStartTime: this.sessionStartTime,
       upgrades: this.upgrades,
       exclusiveFruits: this.exclusiveFruits,
-      purchasedExclusiveIds: this.purchasedExclusiveIds
+      purchasedExclusiveIds: this.purchasedExclusiveIds,
+      autoClickerActive: this.autoClickerActive
     };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -1174,6 +1225,11 @@ class Game {
       if (data.purchasedExclusiveIds) {
         this.purchasedExclusiveIds = data.purchasedExclusiveIds;
       }
+      
+      // Load auto clicker state
+      if (data.autoClickerActive && !this.autoClickerActive) {
+        this.activateAutoClicker();
+      }
 
       if (data.lastSave) {
         const elapsedSec = (Date.now() - data.lastSave) / 1000;
@@ -1226,6 +1282,7 @@ class Game {
     UPGRADES.forEach(u => this.upgrades[u.id] = 0);
     this.exclusiveFruits = [];
     this.purchasedExclusiveIds = [];
+    this.autoClickerActive = false;
     
     this.save();
   }
