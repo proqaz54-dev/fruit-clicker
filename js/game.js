@@ -1339,4 +1339,9 @@ class Game {
 
 document.addEventListener('DOMContentLoaded', () => {
   new Game();
+  const img = document.getElementById('clickFruit');
+  if (img && img.tagName === 'IMG') {
+    const ds = img.getAttribute('data-src') || img.getAttribute('src');
+    if (ds) img.src = ds + '?v=' + Date.now();
+  }
 });
