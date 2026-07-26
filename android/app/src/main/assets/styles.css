@@ -138,10 +138,12 @@ html, body {
 }
 
 .click-fruit {
-  font-size: 110px;
-  line-height: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
   filter: drop-shadow(0 8px 24px rgba(255, 107, 53, 0.4));
-  transition: font-size 0.3s ease;
+  transition: transform 0.3s ease;
   position: relative;
   z-index: 2;
 }
