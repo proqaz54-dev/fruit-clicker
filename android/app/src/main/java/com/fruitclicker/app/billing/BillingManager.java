@@ -25,6 +25,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class BillingManager implements PurchasesUpdatedListener {
             public void onBillingSetupFinished(BillingResult billingResult) {
                 connected = billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
                 Log.d(TAG, "Billing connected: " + connected);
-                dispatchEvent("connected", connected ? 1 : 0, null);
+                dispatchEvent("connected", connected ? 1 : 0, null, null, null);
             }
 
             @Override
@@ -174,7 +175,9 @@ public class BillingManager implements PurchasesUpdatedListener {
                 if (sku != null) payload.put("sku", sku);
                 if (message != null) payload.put("message", message);
                 if (data != null) {
-                    for (String key : data.keySet()) {
+                    Iterator<String> keys = data.keys();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
                         payload.put(key, data.get(key));
                     }
                 }
