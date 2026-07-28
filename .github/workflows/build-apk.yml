@@ -58,11 +58,19 @@ jobs:
 
       - name: Build Debug APK
         run: |
+          set -euo pipefail
           cd android
-          ls -la
-          ls -la app/src/main/java || true
-          ls -la app/src/main/java/com/fruitclicker/app || true
-          ./gradlew clean assembleDebug --no-daemon --stacktrace --info
+          if [ ! -x "gradle/bin/gradle" ]; then
+            echo "Gradle not found, downloading..."
+            curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
+            unzip -q /tmp/gradle.zip
+            mv gradle-8.4 gradle
+            chmod +x gradle/bin/gradle
+            rm -f /tmp/gradle.zip
+          fi
+          ls -la gradle/bin || true
+          ./gradle/bin/gradle --version
+          ./gradle/bin/gradle clean assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
