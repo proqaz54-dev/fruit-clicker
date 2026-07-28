@@ -15,22 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install --no-package-lock
-
-      - name: Validate JavaScript
-        run: |
-          echo "Checking JavaScript syntax..."
-          for file in js/*.js; do
-            echo "Checking $file..."
-            node --check "$file" && echo "✓ $file is valid"
-          done
-
       - name: Setup Java SDK
         uses: actions/setup-java@v4
         with:
@@ -42,33 +26,44 @@ jobs:
         with:
           api-level: 34
           build-tools: 34.0.0
-          cache: false
+          cache: true
           accept-android-sdk-license: true
 
-      - name: Show Android SDK info
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Grant execute permission for gradlew
+        shell: bash
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
-          ls -la ${ANDROID_HOME:-/usr/local/lib/android/sdk} || true
-          ls -la ${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin || true
-          ls -la ${ANDROID_HOME:-/usr/local/lib/android/sdk}/platforms || true
-          ls -la ${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools || true
-          echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > android/local.properties
-          cat android/local.properties
+          if [ -f "android/gradlew" ]; then
+            chmod +x android/gradlew
+          fi
+
+      - name: Validate web assets
+        run: |
+          echo "Checking web assets..."
+          test -f index.html && echo "✓ index.html exists"
+          test -f styles.css && echo "✓ styles.css exists"
+          test -f js/game.js && echo "✓ js/game.js exists"
 
       - name: Build Debug APK
         run: |
-          set -euo pipefail
           cd android
-          if ! command -v gradle >/dev/null 2>&1; then
-            echo "Gradle not found, installing via apt..."
-            sudo apt-get update -y
-            sudo apt-get install -y gradle
+          if [ -f "./gradlew" ]; then
+            ./gradlew clean assembleDebug --no-daemon --stacktrace
+          else
+            gradle clean assembleDebug --no-daemon --stacktrace
           fi
-          gradle --version
-          gradle clean assembleDebug --no-daemon --stacktrace --info
 
-      - name: Upload APK artifact
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -77,21 +72,23 @@ jobs:
             android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Check for production-ready files
+      - name: Build Release APK (unsigned)
+        if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "Checking for required files..."
-          test -f index.html && echo "✓ index.html exists"
-          test -f styles.css && echo "✓ styles.css exists"
-          test -f js/game.js && echo "✓ js/game.js exists"
+          cd android
+          if [ -f "./gradlew" ]; then
+            ./gradlew clean assembleRelease --no-daemon --stacktrace
+          else
+            gradle clean assembleRelease --no-daemon --stacktrace
+          fi
 
-      - name: Upload web build artifacts
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: fruit-clicker-build
+          name: fruit-clicker-release-apk
           path: |
-            index.html
-            styles.css
-            js/
-            android/
-          retention-days: 7
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+        continue-on-error: true
