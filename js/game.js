@@ -1416,7 +1416,7 @@ class Game {
       }
 
       if (data.lastSave) {
-        const elapsedSec = (Date.now() - data.lastSave) / 1000;
+        const elapsedSec = Math.min((Date.now() - data.lastSave) / 1000, 86400);
         if (elapsedSec > 0 && this.incomePerSecond > 0) {
           const offlineEarnings = this.incomePerSecond * elapsedSec;
           this.coins += offlineEarnings;
