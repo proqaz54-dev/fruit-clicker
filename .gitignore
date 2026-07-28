@@ -8,7 +8,10 @@ android/build/
 android/app/build/
 android/local.properties
 android/captures/
-android/gradle/
+
+# Ignore Gradle distributions, but keep wrapper metadata
+android/gradle/*
+!android/gradle/wrapper/
 
 # Capacitor (no longer used)
 .capacitor/
