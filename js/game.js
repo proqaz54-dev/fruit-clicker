@@ -457,11 +457,11 @@ class Game {
 
       // === GLOBAL STOCK SECTION ===
       let shopHtml = '<div class="shop-panel" style="margin-bottom:20px;">';
-      shopHtml += '<h3 class="shop-section-title">🌍 Global Stock</h3>';
-      shopHtml += '<p class="shop-timer-display">⏰ Refresh in: <span id="shopTimer">05:00</span></p>';
+      shopHtml += '<div class="shop-header"><h3>🌍 Global Stock</h3><span class="shop-timer" id="shopTimer">05:00</span></div>';
+      shopHtml += '<p class="shop-desc">Refreshes globally every 5 minutes with random seeds & rare items!</p>';
 
       if (this.shopStock.length === 0) {
-        shopHtml += '<div class="shop-empty"><span>📭</span>No items in stock this cycle.<br>Check back in 5 minutes!</div>';
+        shopHtml += '<div class="shop-empty"><span>📭</span>No rare items in stock this cycle.<br>Check back in 5 minutes!</div>';
       } else {
         shopHtml += '<div class="shop-list" id="gardenShopList"></div>';
       }
@@ -493,11 +493,14 @@ class Game {
           card.innerHTML = `
             <div class="shop-item-emoji">${fruit.emoji}</div>
             <div class="shop-item-info">
-              <div class="shop-item-name">${fruit.name}</div>
-              <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Left: ${item.remaining}</div>
+              <div class="shop-item-name">
+                ${fruit.name} Seed
+                ${rarity ? '<span class="fruit-rarity-tag ' + rarity + '">' + rarity.toUpperCase() + '</span>' : ''}
+              </div>
+              <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Stock: ${item.remaining} left</div>
             </div>
             <div class="shop-item-price">🪙 ${this.formatNumber(item.price)}</div>
-            <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold' : 'Need more'}</button>
+            <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold Out' : 'Need coins'}</button>
           `;
 
           const btn = card.querySelector('.shop-btn');
@@ -518,7 +521,7 @@ class Game {
         coinsCard.innerHTML = `
           <div class="purchase-emoji">🪙</div>
           <div class="purchase-info">
-            <div class="purchase-name">Coins</div>
+            <div class="purchase-name">Coins Pack</div>
             <div class="purchase-amount">1,000,000 coins</div>
           </div>
           <button class="purchase-btn" id="buyCoinsBtn">199 UAH</button>
@@ -531,8 +534,8 @@ class Game {
         crystalsCard.innerHTML = `
           <div class="purchase-emoji">💎</div>
           <div class="purchase-info">
-            <div class="purchase-name">Crystals</div>
-            <div class="purchase-amount">1000 crystals</div>
+            <div class="purchase-name">Crystals Pack</div>
+            <div class="purchase-amount">1,000 crystals</div>
           </div>
           <button class="purchase-btn" id="buyCrystalsBtn">199 UAH</button>
         `;
@@ -876,14 +879,15 @@ class Game {
     this.updateUI();
     this.flashCard(fruitIdx);
     this.playBuySound();
-    this.showNotification('Bought ' + fruit.emoji + ' ' + fruit.name + ' from shop!');
+    this.showNotification('Bought ' + fruit.emoji + ' ' + fruit.name + ' seed from Global Stock!');
   }
 
   getStockRarity(item) {
     const s = SHOP_ITEMS.find(si => si.id === item.id);
     if (!s) return '';
-    if (s.chance <= 0.005) return 'epic';
-    if (s.chance <= 0.02) return 'rare';
+    if (s.chance <= 0.005) return 'legendary';
+    if (s.chance <= 0.02) return 'epic';
+    if (s.chance <= 0.1) return 'rare';
     return '';
   }
 
@@ -1349,13 +1353,11 @@ class Game {
       const newSeed = getStockSeed();
       if (newSeed !== this.lastStockSeed) {
         this.generateStock();
-        if (this.currentTab !== 'garden') {
-          const el = document.getElementById('shopRefreshNotif');
-          if (el) {
-            el.classList.add('show');
-            clearTimeout(this._shopRefreshTimeout);
-            this._shopRefreshTimeout = setTimeout(() => el.classList.remove('show'), 3000);
-          }
+        const el = document.getElementById('shopRefreshNotif');
+        if (el) {
+          el.classList.add('show');
+          clearTimeout(this._shopRefreshTimeout);
+          this._shopRefreshTimeout = setTimeout(() => el.classList.remove('show'), 3000);
         }
       }
     }, 1000);
@@ -1396,7 +1398,10 @@ class Game {
       btn.addEventListener('click', () => this.showTab(btn.dataset.tab));
     });
 
-    document.getElementById('prestigeBtn').addEventListener('click', () => this.doPrestige());
+    const prestigeBtn = document.getElementById('prestigeBtn');
+    if (prestigeBtn) {
+      prestigeBtn.addEventListener('click', () => this.doPrestige());
+    }
 
     document.getElementById('resetBtn').addEventListener('click', () => {
       if (confirm('Reset all progress?')) {
