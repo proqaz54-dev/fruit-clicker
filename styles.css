@@ -14,6 +14,10 @@
   --rare: #FFD700;
   --epic: #A855F7;
   --legendary: #FF6B6B;
+  --mythic: #00FFFF;
+  --cosmic: #FF00FF;
+  --divine: #FF8C00;
+  --eternal: #FFFFFF;
   --bg-start: #2D1B69;
   --bg-end: #1A0A3E;
   --card-bg: rgba(255, 255, 255, 0.08);
@@ -350,6 +354,50 @@ html, body {
   animation: legendaryGlow 2s ease-in-out infinite;
 }
 
+.fruit-rarity-tag.mythic {
+  background: linear-gradient(135deg, var(--mythic), #00E5FF);
+  color: #001a1a;
+  animation: mythicGlow 2s ease-in-out infinite;
+}
+
+@keyframes mythicGlow {
+  0%, 100% { box-shadow: 0 0 6px var(--mythic); }
+  50% { box-shadow: 0 0 16px var(--mythic); }
+}
+
+.fruit-rarity-tag.cosmic {
+  background: linear-gradient(135deg, var(--cosmic), #FF66FF);
+  color: white;
+  animation: cosmicGlow 2s ease-in-out infinite;
+}
+
+@keyframes cosmicGlow {
+  0%, 100% { box-shadow: 0 0 6px var(--cosmic); }
+  50% { box-shadow: 0 0 18px var(--cosmic); }
+}
+
+.fruit-rarity-tag.divine {
+  background: linear-gradient(135deg, var(--divine), #FFB347);
+  color: #1a0a00;
+  animation: divineGlow 2s ease-in-out infinite;
+}
+
+@keyframes divineGlow {
+  0%, 100% { box-shadow: 0 0 8px var(--divine); }
+  50% { box-shadow: 0 0 20px var(--divine); }
+}
+
+.fruit-rarity-tag.eternal {
+  background: linear-gradient(135deg, var(--eternal), #CCCCCC);
+  color: #000;
+  animation: eternalGlow 2s ease-in-out infinite;
+}
+
+@keyframes eternalGlow {
+  0%, 100% { box-shadow: 0 0 10px var(--eternal); }
+  50% { box-shadow: 0 0 26px var(--eternal); }
+}
+
 @keyframes legendaryGlow {
   0%, 100% { box-shadow: 0 0 5px var(--legendary); }
   50% { box-shadow: 0 0 15px var(--legendary); }
@@ -374,6 +422,50 @@ html, body {
 @keyframes legendaryCardGlow {
   0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.2); }
   50% { box-shadow: 0 0 25px rgba(255, 107, 107, 0.4); }
+}
+
+.fruit-card.mythic {
+  border-color: rgba(0, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.12), transparent);
+  animation: mythicCardGlow 2s ease-in-out infinite;
+}
+
+@keyframes mythicCardGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.25); }
+  50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); }
+}
+
+.fruit-card.cosmic {
+  border-color: rgba(255, 0, 255, 0.5);
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.12), transparent);
+  animation: cosmicCardGlow 2s ease-in-out infinite;
+}
+
+@keyframes cosmicCardGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.25); }
+  50% { box-shadow: 0 0 30px rgba(255, 0, 255, 0.5); }
+}
+
+.fruit-card.divine {
+  border-color: rgba(255, 140, 0, 0.6);
+  background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), transparent);
+  animation: divineCardGlow 2s ease-in-out infinite;
+}
+
+@keyframes divineCardGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); }
+  50% { box-shadow: 0 0 35px rgba(255, 140, 0, 0.6); }
+}
+
+.fruit-card.eternal {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent);
+  animation: eternalCardGlow 2s ease-in-out infinite;
+}
+
+@keyframes eternalCardGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.7); }
 }
 
 /* Crystal stat */
@@ -961,6 +1053,30 @@ html, body {
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.1);
   animation: legendaryCardGlow 3s ease-in-out infinite;
+}
+
+.shop-item.mythic {
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.1);
+  animation: mythicCardGlow 2s ease-in-out infinite;
+}
+
+.shop-item.cosmic {
+  border-color: rgba(255, 0, 255, 0.5);
+  background: rgba(255, 0, 255, 0.1);
+  animation: cosmicCardGlow 2s ease-in-out infinite;
+}
+
+.shop-item.divine {
+  border-color: rgba(255, 140, 0, 0.6);
+  background: rgba(255, 140, 0, 0.12);
+  animation: divineCardGlow 2s ease-in-out infinite;
+}
+
+.shop-item.eternal {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.14);
+  animation: eternalCardGlow 2s ease-in-out infinite;
 }
 
 .shop-item-emoji {

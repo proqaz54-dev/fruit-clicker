@@ -19,6 +19,11 @@ const FRUITS = [
   { id: 'starfruit', name: 'Star Fruit', emoji: '⭐', baseCost: 300000000, baseIncome: 500000, cpc: 16000, costMultiplier: 1.15, unlocked: false, minCost: 1000000000, rarity: 'epic', evolutionEmojis: ['⭐', '⭐', '🌟'] },
   { id: 'lychee', name: 'Lychee', emoji: '💎', baseCost: 800000000, baseIncome: 1000000, cpc: 32000, costMultiplier: 1.15, unlocked: false, minCost: 3000000000, rarity: 'legendary', evolutionEmojis: ['💎', '💎', '👑'] },
   { id: 'rambutan', name: 'Rambutan', emoji: '🧡', baseCost: 2000000000, baseIncome: 2000000, cpc: 64000, costMultiplier: 1.15, unlocked: false, minCost: 8000000000, rarity: 'legendary', evolutionEmojis: ['🧡', '🧡', '💫'] },
+  { id: 'fairyfruit', name: 'Fairy Fruit', emoji: '🧚', baseCost: 5000000000, baseIncome: 5000000, cpc: 128000, costMultiplier: 1.15, unlocked: false, minCost: 25000000000, rarity: 'mythic', evolutionEmojis: ['🧚', '🧝', '✨'] },
+  { id: 'dungeonfruit', name: 'Dungeon Fruit', emoji: '🏰', baseCost: 15000000000, baseIncome: 15000000, cpc: 256000, costMultiplier: 1.15, unlocked: false, minCost: 75000000000, rarity: 'mythic', evolutionEmojis: ['🏰', '🏯', '👑'] },
+  { id: 'cosmicfruit', name: 'Cosmic Fruit', emoji: '🌌', baseCost: 50000000000, baseIncome: 50000000, cpc: 512000, costMultiplier: 1.15, unlocked: false, minCost: 250000000000, rarity: 'cosmic', evolutionEmojis: ['🌌', '🌠', '💫'] },
+  { id: 'godfruit', name: 'God Fruit', emoji: '⚡', baseCost: 200000000000, baseIncome: 200000000, cpc: 1000000, costMultiplier: 1.15, unlocked: false, minCost: 1000000000000, rarity: 'divine', evolutionEmojis: ['⚡', '⚛️', '🌟'] },
+  { id: 'eternalfruit', name: 'Eternal Fruit', emoji: '♾️', baseCost: 1000000000000, baseIncome: 1000000000, cpc: 2000000, costMultiplier: 1.15, unlocked: false, minCost: 5000000000000, rarity: 'eternal', evolutionEmojis: ['♾️', '💎', '👑'] },
 ];
 
 // Exclusive fruits for real money
@@ -57,6 +62,11 @@ const SHOP_ITEMS = [
   { id: 'starfruit', chance: 0.0001, minQty: 1, maxQty: 1, price: 50000000 },
   { id: 'lychee', chance: 0.00005, minQty: 1, maxQty: 1, price: 200000000 },
   { id: 'rambutan', chance: 0.00002, minQty: 1, maxQty: 1, price: 500000000 },
+  { id: 'fairyfruit', chance: 0.000008, minQty: 1, maxQty: 1, price: 2500000000 },
+  { id: 'dungeonfruit', chance: 0.000003, minQty: 1, maxQty: 1, price: 7500000000 },
+  { id: 'cosmicfruit', chance: 0.000001, minQty: 1, maxQty: 1, price: 250000000000 },
+  { id: 'godfruit', chance: 0.0000004, minQty: 1, maxQty: 1, price: 1000000000000 },
+  { id: 'eternalfruit', chance: 0.0000001, minQty: 1, maxQty: 1, price: 5000000000000 },
 ];
 
 // Crystal cases
@@ -85,6 +95,11 @@ const CRYSTAL_CASES = [
     { type: 'coins', chance: 0.15, min: 100000, max: 500000 },
     { type: 'crystals', chance: 0.45, min: 50, max: 150 },
     { type: 'fruit', chance: 0.4, fruitIds: ['coconut', 'starfruit', 'lychee', 'rambutan'], minQty: 1, maxQty: 1 }
+  ]},
+  { id: 'mythic', name: 'Mythic Case', emoji: '🧚', cost: 1000, rewards: [
+    { type: 'coins', chance: 0.1, min: 500000, max: 2000000 },
+    { type: 'crystals', chance: 0.4, min: 100, max: 300 },
+    { type: 'fruit', chance: 0.5, fruitIds: ['fairyfruit', 'dungeonfruit', 'cosmicfruit', 'godfruit', 'eternalfruit'], minQty: 1, maxQty: 1 }
   ]},
 ];
 
@@ -1021,6 +1036,10 @@ class Game {
   getStockRarity(item) {
     const s = SHOP_ITEMS.find(si => si.id === item.id);
     if (!s) return '';
+    if (s.chance <= 0.0000005) return 'eternal';
+    if (s.chance <= 0.000002) return 'divine';
+    if (s.chance <= 0.000005) return 'cosmic';
+    if (s.chance <= 0.00001) return 'mythic';
     if (s.chance <= 0.005) return 'legendary';
     if (s.chance <= 0.02) return 'epic';
     if (s.chance <= 0.1) return 'rare';
