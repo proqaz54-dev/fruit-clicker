@@ -304,7 +304,7 @@ class Game {
     }
     
     // Show payment dialog
-    const confirmed = confirm(exclusive.emoji + ' ' + exclusive.name + '\n\nPrice: ' + exclusive.price + ' UAH\n\n' + description + '\n\nPayment integration required.\n\nDemo version - press OK to purchase (free in demo).');
+    const confirmed = confirm(exclusive.emoji + ' ' + exclusive.name + '\n\nPrice: ' + exclusive.price + ' грн\n\n' + description + '\n\nDemo version - press OK to purchase.');
     
     if (confirmed) {
       this.purchasedExclusiveIds.push(exclusive.id);
@@ -348,23 +348,23 @@ class Game {
   }
 
   buyCoins(amount) {
-    const confirmed = confirm('🪙 Buy ' + this.formatNumber(amount) + ' coins\n\nPrice: 199 UAH\n\nDemo version - press OK to get coins (free in demo).');
+    const confirmed = confirm('🪙 Buy ' + this.formatNumber(amount) + ' coins\n\nPrice: 199 грн\n\nDemo version - press OK to get coins.');
     if (confirmed) {
       this.coins += amount;
       this.totalCoins += amount;
       this.updateUI();
-      this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins received!');
+      this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins received for 199 грн!');
       this.save();
     }
   }
 
   buyCrystals(amount) {
-    const confirmed = confirm('💎 Buy ' + amount + ' crystals\n\nPrice: 199 UAH\n\nDemo version - press OK to get crystals (free in demo).');
+    const confirmed = confirm('💎 Buy ' + amount + ' crystals\n\nPrice: 199 грн\n\nDemo version - press OK to get crystals.');
     if (confirmed) {
       this.crystals += amount;
       this.totalCrystals += amount;
       this.updateUI();
-      this.showNotification('💎 +' + amount + ' crystals received!');
+      this.showNotification('💎 +' + amount + ' crystals received for 199 грн!');
       this.save();
     }
   }
@@ -474,7 +474,7 @@ class Game {
       }
 
       // === PURCHASES SECTION ===
-      shopHtml += '<h3 class="shop-section-title">💳 Purchases</h3>';
+      shopHtml += '<h3 class="shop-section-title">💳 Purchases (Real Money)</h3>';
       shopHtml += '<div class="shop-list" id="gardenPurchasesList"></div>';
 
       // === EXCLUSIVE FRUITS SECTION ===
@@ -531,7 +531,7 @@ class Game {
             <div class="purchase-name">Coins Pack</div>
             <div class="purchase-amount">1,000,000 coins</div>
           </div>
-          <button class="purchase-btn" id="buyCoinsBtn">199 UAH</button>
+          <button class="purchase-btn" id="buyCoinsBtn">199 грн</button>
         `;
         purchasesList.appendChild(coinsCard);
         coinsCard.querySelector('#buyCoinsBtn').addEventListener('click', () => this.buyCoins(1000000));
@@ -544,7 +544,7 @@ class Game {
             <div class="purchase-name">Crystals Pack</div>
             <div class="purchase-amount">1,000 crystals</div>
           </div>
-          <button class="purchase-btn" id="buyCrystalsBtn">199 UAH</button>
+          <button class="purchase-btn" id="buyCrystalsBtn">199 грн</button>
         `;
         purchasesList.appendChild(crystalsCard);
         crystalsCard.querySelector('#buyCrystalsBtn').addEventListener('click', () => this.buyCrystals(1000));
@@ -571,7 +571,7 @@ class Game {
               <div class="exclusive-name">${exclusive.name}</div>
               <div class="exclusive-income">${itemDesc}</div>
             </div>
-            ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' UAH</button>'}
+            ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' грн</button>'}
           `;
 
           if (!owned) {
