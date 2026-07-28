@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,7 +41,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
+          api-level: 34
+          build-tools: 34.0.0
           cache: 'gradle'
+          accept-android-sdk-license: true
 
       - name: Prepare Gradle Wrapper
         run: |
@@ -95,7 +98,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -118,7 +121,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -134,8 +137,7 @@ jobs:
           node -e "
             const fs = require('fs');
             const gameCode = fs.readFileSync('js/game.js', 'utf8');
-            
-            // Check for required game elements
+
             const checks = [
               ['FRUITS array', /const FRUITS = \[/],
               ['CRYSTAL_CASES', /const CRYSTAL_CASES/],
@@ -148,7 +150,7 @@ jobs:
               ['renderTimeRewards method', /renderTimeRewards\(\)/],
               ['renderDailyRewards method', /renderDailyRewards\(\)/]
             ];
-            
+
             let allPassed = true;
             checks.forEach(([name, regex]) => {
               if (regex.test(gameCode)) {
@@ -158,7 +160,7 @@ jobs:
                 allPassed = false;
               }
             });
-            
+
             if (allPassed) {
               console.log('\n✓ All game functionality checks passed!');
             } else {
@@ -171,7 +173,7 @@ jobs:
     needs: [build, lint, test]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
