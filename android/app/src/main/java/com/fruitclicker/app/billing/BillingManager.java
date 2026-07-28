@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-public class BillingManager implements JavascriptInterface {
+public class BillingManager {
     private static final String TAG = "BillingManager";
     private final Activity activity;
     private final WebView webView;
