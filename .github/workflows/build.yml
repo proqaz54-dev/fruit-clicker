@@ -47,11 +47,21 @@ jobs:
           curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdtools.zip
           unzip -q cmdtools.zip
           mv cmdline-tools/* .
-          rm -rf cmdline-tools
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          rm -rf cmdline-tools cmdtools.zip
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" --sdk_root=$ANDROID_HOME
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
           echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la $ANDROID_HOME/
+          ls -la $ANDROID_HOME/cmdline-tools/latest/bin/ || true
+          ls -la $ANDROID_HOME/platforms/ || true
+          ls -la $ANDROID_HOME/build-tools/ || true
+          cat android/local.properties
 
       - name: Prepare Gradle Wrapper
         run: |
@@ -70,9 +80,9 @@ jobs:
           cd android
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --stacktrace --info
           else
-            ./gradle/bin/gradle assembleDebug
+            ./gradle/bin/gradle assembleDebug --stacktrace --info
           fi
 
       - name: Upload APK artifact
