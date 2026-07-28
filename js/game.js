@@ -172,6 +172,7 @@ class Game {
     this.lastStockSeed = -1;
     this.shopStock = [];
     this.fruitCounts[0] = 1;
+
     this.recalculate();
     this.load();
     this.checkDailyReward();
@@ -207,6 +208,7 @@ class Game {
     this.updateUI();
     this.renderUpgrades();
     this.showNotification(upgrade.emoji + ' ' + upgrade.name + ' upgraded to level ' + this.upgrades[id] + '!');
+    this.save();
   }
 
   getFruitCost(fruit, index) {
@@ -272,6 +274,7 @@ class Game {
     this.updateUI();
     this.flashCard(index);
     this.playBuySound();
+    this.save();
   }
 
   upgradeFruit(index) {
@@ -287,6 +290,7 @@ class Game {
     this.renderGarden();
     this.updateUI();
     this.showNotification(fruit.emoji + ' ' + fruit.name + ' upgraded to level ' + this.fruitLevels[index] + '!');
+    this.save();
   }
 
   buyExclusiveFruit(exclusive) {
@@ -315,6 +319,7 @@ class Game {
       this.renderGarden();
       this.updateUI();
       this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased!');
+      this.save();
     }
   }
 
@@ -349,6 +354,7 @@ class Game {
       this.totalCoins += amount;
       this.updateUI();
       this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins received!');
+      this.save();
     }
   }
 
@@ -359,6 +365,7 @@ class Game {
       this.totalCrystals += amount;
       this.updateUI();
       this.showNotification('💎 +' + amount + ' crystals received!');
+      this.save();
     }
   }
 
@@ -880,6 +887,7 @@ class Game {
     this.flashCard(fruitIdx);
     this.playBuySound();
     this.showNotification('Bought ' + fruit.emoji + ' ' + fruit.name + ' seed from Global Stock!');
+    this.save();
   }
 
   getStockRarity(item) {
@@ -971,6 +979,7 @@ class Game {
     this.updateUI();
     this.playCrystalSound();
     this.showNotification('📦 ' + caseItem.name + ': ' + rewardText);
+    this.save();
   }
 
   // ===== TIME-BASED REWARDS =====
@@ -1008,6 +1017,7 @@ class Game {
     
     this.showNotification('🎁 ' + reward.message);
     this.updateUI();
+    this.save();
   }
 
   renderTimeRewards() {
@@ -1144,6 +1154,7 @@ class Game {
     this.playCrystalSound();
     this.showNotification('🎁 Daily Reward: ' + reward.emoji + ' Claimed! Streak: ' + this.loginStreak + ' days');
     this.renderDailyRewards();
+    this.save();
   }
 
   showNotification(msg) {
@@ -1185,7 +1196,9 @@ class Game {
       upgrades: this.upgrades,
       exclusiveFruits: this.exclusiveFruits,
       purchasedExclusiveIds: this.purchasedExclusiveIds,
-      autoClickerActive: this.autoClickerActive
+      autoClickerActive: this.autoClickerActive,
+      lastStockSeed: this.lastStockSeed,
+      shopStock: this.shopStock
     };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -1227,6 +1240,11 @@ class Game {
       this.claimedDailyRewardToday = data.claimedDailyRewardToday || false;
       this.claimedTimeRewards = data.claimedTimeRewards || [];
       this.sessionStartTime = data.sessionStartTime || Date.now();
+
+      if (data.lastStockSeed === getStockSeed() && data.shopStock) {
+        this.lastStockSeed = data.lastStockSeed;
+        this.shopStock = data.shopStock;
+      }
       
       // Load upgrades
       if (data.upgrades) {
@@ -1367,7 +1385,7 @@ class Game {
       this.checkTimeRewards();
     }, 60000);
 
-    this.saveInterval = setInterval(() => this.save(), 15000);
+    this.saveInterval = setInterval(() => this.save(), 10000);
   }
 
   updateShopTimer() {
@@ -1411,6 +1429,11 @@ class Game {
     });
 
     window.addEventListener('beforeunload', () => this.save());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.save();
+      }
+    });
   }
 }
 
