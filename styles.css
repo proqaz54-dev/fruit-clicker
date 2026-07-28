@@ -874,7 +874,7 @@ html, body {
   pointer-events: auto;
 }
 
-/* ===== SHOP ===== */
+/* ===== SHOP SECTION IN GARDEN ===== */
 .shop-panel {
   background: var(--card-bg);
   backdrop-filter: blur(10px);

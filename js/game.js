@@ -312,7 +312,7 @@ class Game {
       }
       
       this.recalculate();
-      this.renderShop();
+      this.renderGarden();
       this.updateUI();
       this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased!');
     }
@@ -451,6 +451,131 @@ class Game {
   }
 
   renderGarden() {
+    const shopContainer = document.getElementById('gardenShopSection');
+    if (shopContainer) {
+      shopContainer.innerHTML = '';
+
+      // === GLOBAL STOCK SECTION ===
+      let shopHtml = '<div class="shop-panel" style="margin-bottom:20px;">';
+      shopHtml += '<h3 class="shop-section-title">🌍 Global Stock</h3>';
+      shopHtml += '<p class="shop-timer-display">⏰ Refresh in: <span id="shopTimer">05:00</span></p>';
+
+      if (this.shopStock.length === 0) {
+        shopHtml += '<div class="shop-empty"><span>📭</span>No items in stock this cycle.<br>Check back in 5 minutes!</div>';
+      } else {
+        shopHtml += '<div class="shop-list" id="gardenShopList"></div>';
+      }
+
+      // === PURCHASES SECTION ===
+      shopHtml += '<h3 class="shop-section-title">💳 Purchases</h3>';
+      shopHtml += '<div class="shop-list" id="gardenPurchasesList"></div>';
+
+      // === EXCLUSIVE FRUITS SECTION ===
+      shopHtml += '<h3 class="shop-section-title">👑 Exclusive Items</h3>';
+      shopHtml += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
+      shopHtml += '<div class="shop-list" id="gardenExclusiveList"></div>';
+
+      shopHtml += '</div>';
+      shopContainer.innerHTML = shopHtml;
+
+      // Render Shop Stock Items
+      const stockList = document.getElementById('gardenShopList');
+      if (stockList && this.shopStock.length > 0) {
+        this.shopStock.forEach((item, i) => {
+          const fruit = this.getFruitById(item.id);
+          if (!fruit) return;
+          const rarity = this.getStockRarity(item);
+          const canBuy = this.coins >= item.price && item.remaining > 0;
+          const remainingPct = item.remaining / item.initialQty;
+
+          const card = document.createElement('div');
+          card.className = 'shop-item' + (rarity ? ' ' + rarity : '');
+          card.innerHTML = `
+            <div class="shop-item-emoji">${fruit.emoji}</div>
+            <div class="shop-item-info">
+              <div class="shop-item-name">${fruit.name}</div>
+              <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Left: ${item.remaining}</div>
+            </div>
+            <div class="shop-item-price">🪙 ${this.formatNumber(item.price)}</div>
+            <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold' : 'Need more'}</button>
+          `;
+
+          const btn = card.querySelector('.shop-btn');
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.buyShopItem(i);
+          });
+
+          stockList.appendChild(card);
+        });
+      }
+
+      // Render Purchases
+      const purchasesList = document.getElementById('gardenPurchasesList');
+      if (purchasesList) {
+        const coinsCard = document.createElement('div');
+        coinsCard.className = 'purchase-item';
+        coinsCard.innerHTML = `
+          <div class="purchase-emoji">🪙</div>
+          <div class="purchase-info">
+            <div class="purchase-name">Coins</div>
+            <div class="purchase-amount">1,000,000 coins</div>
+          </div>
+          <button class="purchase-btn" id="buyCoinsBtn">199 UAH</button>
+        `;
+        purchasesList.appendChild(coinsCard);
+        coinsCard.querySelector('#buyCoinsBtn').addEventListener('click', () => this.buyCoins(1000000));
+
+        const crystalsCard = document.createElement('div');
+        crystalsCard.className = 'purchase-item';
+        crystalsCard.innerHTML = `
+          <div class="purchase-emoji">💎</div>
+          <div class="purchase-info">
+            <div class="purchase-name">Crystals</div>
+            <div class="purchase-amount">1000 crystals</div>
+          </div>
+          <button class="purchase-btn" id="buyCrystalsBtn">199 UAH</button>
+        `;
+        purchasesList.appendChild(crystalsCard);
+        crystalsCard.querySelector('#buyCrystalsBtn').addEventListener('click', () => this.buyCrystals(1000));
+      }
+
+      // Render Exclusive Items
+      const exclusiveList = document.getElementById('gardenExclusiveList');
+      if (exclusiveList) {
+        EXCLUSIVE_FRUITS.forEach(exclusive => {
+          const owned = this.purchasedExclusiveIds.includes(exclusive.id);
+          const card = document.createElement('div');
+          card.className = 'exclusive-item' + (owned ? ' owned' : '') + (exclusive.isAutoClicker ? ' auto-clicker' : '');
+
+          let itemDesc = '';
+          if (exclusive.isAutoClicker) {
+            itemDesc = '🤖 +10 clicks/sec';
+          } else {
+            itemDesc = '+' + this.formatNumber(exclusive.baseIncome) + '/sec';
+          }
+
+          card.innerHTML = `
+            <div class="exclusive-emoji">${exclusive.emoji}</div>
+            <div class="exclusive-info">
+              <div class="exclusive-name">${exclusive.name}</div>
+              <div class="exclusive-income">${itemDesc}</div>
+            </div>
+            ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' UAH</button>'}
+          `;
+
+          if (!owned) {
+            const btn = card.querySelector('.exclusive-btn');
+            btn.addEventListener('click', () => this.buyExclusiveFruit(exclusive));
+          }
+
+          exclusiveList.appendChild(card);
+        });
+      }
+
+      this.updateShopTimer();
+    }
+
     const list = document.getElementById('fruitsList');
     list.innerHTML = '';
     
@@ -534,8 +659,6 @@ class Game {
     // Update current tab content
     if (this.currentTab === 'garden') {
       this.renderGarden();
-    } else if (this.currentTab === 'shop') {
-      this.renderShop();
     } else if (this.currentTab === 'inventory') {
       this.renderInventory();
     } else if (this.currentTab === 'upgrades') {
@@ -556,7 +679,6 @@ class Game {
     
     // Hide all tabs first
     document.getElementById('tabStats').style.display = 'none';
-    document.getElementById('tabShop').style.display = 'none';
     document.getElementById('tabCases').style.display = 'none';
     document.getElementById('tabRewards').style.display = 'none';
     document.getElementById('tabInventory').style.display = 'none';
@@ -564,12 +686,11 @@ class Game {
     document.getElementById('main').style.display = 'none';
     
     // Show selected tab
-    if (tab === 'garden' || tab === 'shop' || tab === 'inventory' || tab === 'upgrades' || tab === 'cases' || tab === 'rewards') {
+    if (tab === 'garden' || tab === 'inventory' || tab === 'upgrades' || tab === 'cases' || tab === 'rewards') {
       document.getElementById('main').style.display = 'block';
     }
     
     if (tab === 'stats') document.getElementById('tabStats').style.display = 'block';
-    if (tab === 'shop') document.getElementById('tabShop').style.display = 'block';
     if (tab === 'cases') document.getElementById('tabCases').style.display = 'block';
     if (tab === 'rewards') document.getElementById('tabRewards').style.display = 'block';
     if (tab === 'inventory') document.getElementById('tabInventory').style.display = 'block';
@@ -616,7 +737,7 @@ class Game {
         });
       }
     });
-    if (this.currentTab === 'shop') this.renderShop();
+    if (this.currentTab === 'garden') this.renderGarden();
   }
 
   // ===== INVENTORY =====
@@ -751,7 +872,7 @@ class Game {
     stockItem.remaining--;
     fruit.unlocked = true;
     this.recalculate();
-    this.renderShop();
+    this.renderGarden();
     this.updateUI();
     this.flashCard(fruitIdx);
     this.playBuySound();
@@ -764,112 +885,6 @@ class Game {
     if (s.chance <= 0.005) return 'epic';
     if (s.chance <= 0.02) return 'rare';
     return '';
-  }
-
-  renderShop() {
-    const list = document.getElementById('shopList');
-    if (!list) return;
-    list.innerHTML = '';
-
-          // === GLOBAL STOCK SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">🌍 Global Stock</h3>';
-    list.innerHTML += '<p class="shop-timer-display">⏰ Refresh in: <span id="shopTimer">05:00</span></p>';
-
-    if (this.shopStock.length === 0) {
-      list.innerHTML += '<div class="shop-empty"><span>📭</span>No items in stock this cycle.<br>Check back in 5 minutes!</div>';
-    } else {
-      this.shopStock.forEach((item, i) => {
-        const fruit = this.getFruitById(item.id);
-        if (!fruit) return;
-        const rarity = this.getStockRarity(item);
-        const canBuy = this.coins >= item.price && item.remaining > 0;
-        const remainingPct = item.remaining / item.initialQty;
-
-        const card = document.createElement('div');
-        card.className = 'shop-item' + (rarity ? ' ' + rarity : '');
-        card.innerHTML = `
-          <div class="shop-item-emoji">${fruit.emoji}</div>
-          <div class="shop-item-info">
-            <div class="shop-item-name">${fruit.name}</div>
-            <div class="shop-item-qty${remainingPct <= 0.25 ? ' low' : ''}">Left: ${item.remaining}</div>
-          </div>
-          <div class="shop-item-price">🪙 ${this.formatNumber(item.price)}</div>
-          <button class="shop-btn" data-shop-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Buy' : item.remaining <= 0 ? 'Sold' : 'Need more'}</button>
-        `;
-
-        const btn = card.querySelector('.shop-btn');
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.buyShopItem(i);
-        });
-
-        list.appendChild(card);
-      });
-    }
-
-    // === PURCHASES SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">💳 Purchases</h3>';
-    
-    // Coins purchase
-    const coinsCard = document.createElement('div');
-    coinsCard.className = 'purchase-item';
-    coinsCard.innerHTML = `
-      <div class="purchase-emoji">🪙</div>
-      <div class="purchase-info">
-        <div class="purchase-name">Coins</div>
-        <div class="purchase-amount">1,000,000 coins</div>
-      </div>
-      <button class="purchase-btn" onclick="game.buyCoins(1000000)">199 UAH</button>
-    `;
-    list.appendChild(coinsCard);
-
-    // Crystals purchase
-    const crystalsCard = document.createElement('div');
-    crystalsCard.className = 'purchase-item';
-    crystalsCard.innerHTML = `
-      <div class="purchase-emoji">💎</div>
-      <div class="purchase-info">
-        <div class="purchase-name">Crystals</div>
-        <div class="purchase-amount">1000 crystals</div>
-      </div>
-      <button class="purchase-btn" onclick="game.buyCrystals(1000)">199 UAH</button>
-    `;
-    list.appendChild(crystalsCard);
-
-    // === EXCLUSIVE FRUITS SECTION ===
-    list.innerHTML += '<h3 class="shop-section-title">👑 Exclusive Items</h3>';
-    list.innerHTML += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
-    
-    EXCLUSIVE_FRUITS.forEach(exclusive => {
-      const owned = this.purchasedExclusiveIds.includes(exclusive.id);
-      const card = document.createElement('div');
-      card.className = 'exclusive-item' + (owned ? ' owned' : '') + (exclusive.isAutoClicker ? ' auto-clicker' : '');
-      
-      let itemDesc = '';
-      if (exclusive.isAutoClicker) {
-        itemDesc = '🤖 +10 clicks/sec';
-      } else {
-        itemDesc = '+' + this.formatNumber(exclusive.baseIncome) + '/sec';
-      }
-      
-      card.innerHTML = `
-        <div class="exclusive-emoji">${exclusive.emoji}</div>
-        <div class="exclusive-info">
-          <div class="exclusive-name">${exclusive.name}</div>
-          <div class="exclusive-income">${itemDesc}</div>
-        </div>
-        ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' UAH</button>'}
-      `;
-      
-      if (!owned) {
-        const btn = card.querySelector('.exclusive-btn');
-        btn.addEventListener('click', () => this.buyExclusiveFruit(exclusive));
-      }
-      
-      list.appendChild(card);
-    });
-
-    this.updateShopTimer();
   }
 
   // ===== CRYSTAL CASES =====
@@ -1334,7 +1349,7 @@ class Game {
       const newSeed = getStockSeed();
       if (newSeed !== this.lastStockSeed) {
         this.generateStock();
-        if (this.currentTab !== 'shop') {
+        if (this.currentTab !== 'garden') {
           const el = document.getElementById('shopRefreshNotif');
           if (el) {
             el.classList.add('show');
