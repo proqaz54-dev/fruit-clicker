@@ -60,17 +60,13 @@ jobs:
         run: |
           set -euo pipefail
           cd android
-          if [ ! -x "gradle/bin/gradle" ]; then
-            echo "Gradle not found, downloading..."
-            curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o /tmp/gradle.zip
-            unzip -q /tmp/gradle.zip
-            mv gradle-8.4 gradle
-            chmod +x gradle/bin/gradle
-            rm -f /tmp/gradle.zip
+          if ! command -v gradle >/dev/null 2>&1; then
+            echo "Gradle not found, installing via apt..."
+            sudo apt-get update -y
+            sudo apt-get install -y gradle
           fi
-          ls -la gradle/bin || true
-          ./gradle/bin/gradle --version
-          ./gradle/bin/gradle clean assembleDebug --no-daemon --stacktrace --info
+          gradle --version
+          gradle clean assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
