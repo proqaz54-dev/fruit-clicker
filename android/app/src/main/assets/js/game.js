@@ -853,17 +853,24 @@ class Game {
     if (!container) return;
     container.innerHTML = '';
 
-    FRUITS.forEach((fruit, i) => {
-      const count = this.fruitCounts[i];
-      const level = this.fruitLevels[i];
-      const emoji = this.getFruitEmoji(fruit, i);
-      const income = this.getFruitIncome(fruit, i);
+    const ownedFruits = FRUITS.filter((fruit, i) => this.fruitCounts[i] > 0);
+    
+    if (ownedFruits.length === 0 && this.exclusiveFruits.length === 0) {
+      container.innerHTML = '<div class="empty-inventory">Buy fruits to see them in your inventory!</div>';
+      return;
+    }
+
+    ownedFruits.forEach((fruit, i) => {
+      const fruitIdx = FRUITS.indexOf(fruit);
+      const count = this.fruitCounts[fruitIdx];
+      const level = this.fruitLevels[fruitIdx];
+      const emoji = this.getFruitEmoji(fruit, fruitIdx);
+      const income = this.getFruitIncome(fruit, fruitIdx);
       const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
-      const owned = count > 0;
 
       const card = document.createElement('div');
-      card.className = 'inventory-item' + (owned ? '' : ' locked') + rarityClass;
-      card.innerHTML = owned ? `
+      card.className = 'inventory-item' + rarityClass;
+      card.innerHTML = `
         <div class="inventory-emoji">${emoji}</div>
         <div class="inventory-info">
           <div class="inventory-name">${fruit.name}</div>
@@ -874,44 +881,23 @@ class Game {
           <div class="inventory-income">+${this.formatNumber(income * count)}/сек</div>
         </div>
         ${fruit.rarity ? '<span class="fruit-rarity-tag ' + fruit.rarity + '">' + fruit.rarity.toUpperCase() + '</span>' : ''}
-      ` : `
-        <div class="inventory-emoji">🔒</div>
-        <div class="inventory-info">
-          <div class="inventory-name">${fruit.name}</div>
-          <div class="inventory-details">
-            <span class="inv-count">🔒 Locked</span>
-          </div>
-          <div class="inventory-income">Unlock at ${this.formatNumber(fruit.minCost)} total</div>
-        </div>
       `;
       container.appendChild(card);
     });
 
-    EXCLUSIVE_FRUITS.forEach(exclusive => {
-      const owned = this.purchasedExclusiveIds.includes(exclusive.id);
-      const level = owned ? (this.exclusiveFruits.find(f => f.id === exclusive.id)?.level || 1) : 1;
-
+    this.exclusiveFruits.forEach((fruit, i) => {
+      const level = this.exclusiveFruits[i].level || 1;
       const card = document.createElement('div');
-      card.className = 'inventory-item exclusive' + (owned ? '' : ' locked');
-      card.innerHTML = owned ? `
-        <div class="inventory-emoji">${exclusive.emoji}</div>
+      card.className = 'inventory-item exclusive';
+      card.innerHTML = `
+        <div class="inventory-emoji">${fruit.emoji}</div>
         <div class="inventory-info">
-          <div class="inventory-name">${exclusive.name}</div>
+          <div class="inventory-name">${fruit.name}</div>
           <div class="inventory-details">
             <span class="inv-count">x1</span>
             <span class="inv-level">⭐${level}</span>
           </div>
-          <div class="inventory-income">+${this.formatNumber(exclusive.baseIncome * level)}/сек</div>
-        </div>
-        <span class="fruit-rarity-tag exclusive">EXCLUSIVE</span>
-      ` : `
-        <div class="inventory-emoji">🔒</div>
-        <div class="inventory-info">
-          <div class="inventory-name">${exclusive.name}</div>
-          <div class="inventory-details">
-            <span class="inv-count">🔒 Exclusive</span>
-          </div>
-          <div class="inventory-income">${exclusive.price} грн</div>
+          <div class="inventory-income">+${this.formatNumber(fruit.baseIncome * level)}/сек</div>
         </div>
         <span class="fruit-rarity-tag exclusive">EXCLUSIVE</span>
       `;
