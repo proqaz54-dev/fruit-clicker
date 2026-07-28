@@ -689,13 +689,14 @@ class Game {
       const cost = this.getFruitCost(fruit, i);
       const income = this.getFruitIncome(fruit, i);
       const unlocked = fruit.unlocked || this.totalCoins >= fruit.minCost;
+      if (!unlocked) return;
       const affordable = this.coins >= cost;
       const emoji = this.getFruitEmoji(fruit, i);
       const level = this.fruitLevels[i];
 
       const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
       const card = document.createElement('div');
-      card.className = 'fruit-card' + (unlocked ? ' affordable' : ' locked') + rarityClass;
+      card.className = 'fruit-card affordable' + rarityClass;
       card.innerHTML = `
         <div class="fruit-card-emoji">${emoji}</div>
         <div class="fruit-card-info">
@@ -710,17 +711,17 @@ class Game {
             🪙 ${this.formatNumber(cost)}
             ${count > 0 ? '<button class="upgrade-btn" data-upgrade-fruit="' + i + '">⬆️ ' + this.formatNumber(Math.floor(1000 * Math.pow(1.5, level))) + '</button>' : ''}
           </div>
-          <div class="buy-indicator">${!unlocked ? '🔒 Unlock at ' + this.formatNumber(fruit.minCost) + ' total' : affordable ? 'Tap to buy' : 'Not enough'}</div>
+          <div class="buy-indicator">${affordable ? 'Tap to buy' : 'Not enough'}</div>
         </div>
       `;
 
       card.addEventListener('click', (e) => {
         if (e.target.classList.contains('upgrade-btn')) {
           this.upgradeFruit(i);
-        } else if (unlocked && affordable) {
+        } else if (affordable) {
           this.buyFruit(i);
-        } else if (!unlocked) {
-          this.showNotification('🔒 Earn ' + this.formatNumber(fruit.minCost) + ' more coins to unlock!');
+        } else {
+          this.showNotification('Not enough coins');
         }
       });
 
