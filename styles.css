@@ -1155,6 +1155,16 @@ html, body {
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
 }
 
+.inventory-item.locked {
+  opacity: 0.65;
+  filter: grayscale(0.4);
+}
+
+.inventory-item.exclusive.locked {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .inventory-emoji {
   font-size: 36px;
   flex-shrink: 0;

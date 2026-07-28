@@ -874,7 +874,7 @@ html, body {
   pointer-events: auto;
 }
 
-/* ===== SHOP ===== */
+/* ===== SHOP SECTION IN GARDEN ===== */
 .shop-panel {
   background: var(--card-bg);
   backdrop-filter: blur(10px);
@@ -890,23 +890,27 @@ html, body {
   margin-bottom: 8px;
 }
 
-.shop-header h2 {
-  font-size: 20px;
+.shop-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--secondary);
 }
 
 .shop-timer {
-  font-size: 22px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--secondary);
   font-variant-numeric: tabular-nums;
-  background: rgba(0,0,0,0.3);
-  padding: 4px 12px;
+  background: rgba(0,0,0,0.4);
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
   font-family: 'SF Mono', 'Courier New', monospace;
 }
 
 .shop-timer.urgent {
   color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.5);
   animation: timerPulse 1s ease-in-out infinite;
 }
 
@@ -916,9 +920,8 @@ html, body {
 }
 
 .shop-desc {
-  text-align: center;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   margin-bottom: 16px;
 }
 
@@ -940,13 +943,19 @@ html, body {
 }
 
 .shop-item.rare {
-  border-color: rgba(255, 215, 0, 0.3);
-  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.06);
 }
 
 .shop-item.epic {
-  border-color: rgba(147, 51, 234, 0.3);
-  background: rgba(147, 51, 234, 0.05);
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.shop-item.legendary {
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.1);
+  animation: legendaryCardGlow 3s ease-in-out infinite;
 }
 
 .shop-item-emoji {
@@ -964,6 +973,9 @@ html, body {
 .shop-item-name {
   font-size: 14px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .shop-item-qty {
@@ -1009,14 +1021,14 @@ html, body {
 
 .shop-empty {
   text-align: center;
-  padding: 40px 20px;
+  padding: 30px 16px;
   color: var(--text-muted);
 }
 
 .shop-empty span {
-  font-size: 48px;
+  font-size: 40px;
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .shop-refresh-notification {
@@ -1141,6 +1153,16 @@ html, body {
 .inventory-item.exclusive {
   border-color: rgba(255, 215, 0, 0.3);
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
+}
+
+.inventory-item.locked {
+  opacity: 0.65;
+  filter: grayscale(0.4);
+}
+
+.inventory-item.exclusive.locked {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .inventory-emoji {
@@ -1323,12 +1345,6 @@ html, body {
   margin-top: 0;
 }
 
-.shop-timer-display {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-
 .exclusive-desc {
   color: var(--text-muted);
   font-size: 12px;
@@ -1398,6 +1414,17 @@ html, body {
 .exclusive-item.owned {
   border-color: rgba(6, 214, 160, 0.3);
   background: rgba(6, 214, 160, 0.05);
+}
+
+.exclusive-item.auto-clicker:not(.owned) {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  animation: autoClickerGlow 2s ease-in-out infinite;
+}
+
+@keyframes autoClickerGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
 }
 
 .exclusive-emoji {
@@ -1473,183 +1500,4 @@ html, body {
 
 .upgrade-btn-inline:active {
   transform: scale(0.95);
-}
-
-/* ===== CASES ===== */
-.cases-panel {
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-.cases-panel h2 {
-  font-size: 20px;
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.cases-desc {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-
-.cases-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.case-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-}
-
-.case-item.rare {
-  border-color: rgba(255, 215, 0, 0.3);
-}
-
-.case-item.epic {
-  border-color: rgba(168, 85, 247, 0.3);
-}
-
-.case-item.legendary {
-  border-color: rgba(255, 107, 107, 0.3);
-  animation: legendaryCardGlow 3s ease-in-out infinite;
-}
-
-.case-emoji {
-  font-size: 36px;
-  flex-shrink: 0;
-}
-
-.case-info {
-  flex: 1;
-}
-
-.case-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.case-cost {
-  font-size: 12px;
-  color: var(--crystal);
-  margin-top: 2px;
-}
-
-.case-btn {
-  background: linear-gradient(135deg, var(--crystal), var(--crystal-dark));
-  border: none;
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.case-btn:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.case-btn:disabled {
-  opacity: 0.3;
-  transform: none !important;
-}
-
-/* ===== REWARDS ===== */
-.rewards-panel {
-  background: var(--card-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-.rewards-panel h2 {
-  font-size: 20px;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.rewards-section {
-  margin-bottom: 24px;
-}
-
-.rewards-section h3 {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--secondary);
-}
-
-.rewards-subtitle {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-bottom: 12px;
-}
-
-.rewards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.reward-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-}
-
-.reward-item.available {
-  border-color: rgba(6, 214, 160, 0.3);
-  background: rgba(6, 214, 160, 0.05);
-}
-
-.reward-item.claimed {
-  opacity: 0.4;
-}
-
-.reward-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-  width: 36px;
-  text-align: center;
-}
-
-.reward-info {
-  flex: 1;
-}
-
-.reward-time {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.reward-amount {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-transform: capitalize;
-}
-
-.streak-display {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 12px;
 }

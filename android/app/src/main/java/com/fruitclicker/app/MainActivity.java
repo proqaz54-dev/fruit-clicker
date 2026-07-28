@@ -2,14 +2,23 @@ package com.fruitclicker.app;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.fruitclicker.app.billing.BillingManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends Activity {
 
+    private static final String TAG = "MainActivity";
     private WebView webView;
+    private BillingManager billingManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +44,27 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
 
+        billingManager = new BillingManager(this, webView);
+
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public String purchase(String sku) {
+                billingManager.purchase(sku);
+                return "queued";
+            }
+
+            @JavascriptInterface
+            public String isAvailable() {
+                return billingManager.isAvailable();
+            }
+        }, "AndroidBilling");
+
         webView.loadUrl("file:///android_asset/index.html");
     }
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
+        if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
             super.onBackPressed();
@@ -49,7 +73,14 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (webView != null) webView.destroy();
+        if (billingManager != null) {
+            billingManager.destroy();
+            billingManager = null;
+        }
+        if (webView != null) {
+            webView.destroy();
+            webView = null;
+        }
         super.onDestroy();
     }
 }

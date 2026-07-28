@@ -124,6 +124,86 @@ function getStockSeed() {
 const SAVE_KEY = 'fruitclicker_save_v2';
 const SAVE_VERSION = 2;
 
+const PLAY_STORE_PRODUCTS = {
+  coins_pack_1: { id: 'coins_pack_1', type: 'coins', amount: 1000000, price: 199, currency: 'UAH' },
+  crystals_pack_1: { id: 'crystals_pack_1', type: 'crystals', amount: 1000, price: 199, currency: 'UAH' },
+  golden_apple: { id: 'golden_apple', type: 'exclusive', fruitId: 'goldenapple', price: 99, currency: 'UAH' },
+  rainbow_berry: { id: 'rainbow_berry', type: 'exclusive', fruitId: 'rainbowberry', price: 99, currency: 'UAH' },
+  crystal_pear: { id: 'crystal_pear', type: 'exclusive', fruitId: 'crystalpear', price: 99, currency: 'UAH' },
+  phoenix_fruit: { id: 'phoenix_fruit', type: 'exclusive', fruitId: 'phoenixfruit', price: 99, currency: 'UAH' },
+  autoclicker: { id: 'autoclicker', type: 'exclusive', fruitId: 'autoclicker', price: 99, currency: 'UAH' },
+};
+
+function getBillingBridge() {
+  try {
+    if (window.AndroidBilling && typeof window.AndroidBilling.purchase === 'function') {
+      return window.AndroidBilling;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function buyPlayStoreProduct(productKey) {
+  const product = PLAY_STORE_PRODUCTS[productKey];
+  if (!product) {
+    showNotification('Unknown product: ' + productKey);
+    return Promise.resolve(false);
+  }
+
+  const bridge = getBillingBridge();
+  if (!bridge) {
+    const confirmed = confirm(
+      (product.type === 'coins' ? '🪙' : product.type === 'crystals' ? '💎' : '👑') +
+      ' ' + (product.type === 'exclusive' ? 'Buy ' + product.id.replace(/_/g, ' ') : product.type === 'coins' ? 'Buy Coins' : 'Buy Crystals') +
+      '\n\nPrice: ' + product.price + ' ' + (product.currency || 'UAH') +
+      '\n\nDemo mode: press OK to simulate purchase. Connect Google Play Billing for real purchases.'
+    );
+    if (!confirmed) return Promise.resolve(false);
+    return Promise.resolve({ demo: true, productKey });
+  }
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(false), 30000);
+
+    window._billingResolve = (payload) => {
+      clearTimeout(timeout);
+      if (!payload) return resolve(false);
+      try {
+        const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        if (data.event === 'result' && data.code === 1) {
+          resolve({ demo: false, productKey, purchase: data });
+        } else if (data.event === 'result' && data.code === 2) {
+          showNotification('⏳ Purchase is pending...');
+          resolve(false);
+        } else if (data.event === 'result' && data.code === 0) {
+          showNotification('Purchase failed' + (data.message ? ': ' + data.message : ''));
+          resolve(false);
+        } else if (data.event === 'connected' && data.code !== 1) {
+          showNotification('Google Play Billing is not available');
+          resolve(false);
+        } else {
+          resolve(false);
+        }
+      } catch (e) {
+        resolve(false);
+      }
+    };
+
+    window.onBillingEvent = function(payload) {
+      if (window._billingResolve) {
+        window._billingResolve(payload);
+      }
+    };
+
+    try {
+      bridge.purchase(productKey);
+    } catch (e) {
+      clearTimeout(timeout);
+      resolve(false);
+    }
+  });
+}
+
 class Game {
   constructor() {
     this.coins = 0;
@@ -295,32 +375,25 @@ class Game {
 
   buyExclusiveFruit(exclusive) {
     if (this.purchasedExclusiveIds.includes(exclusive.id)) return;
-    
-    let description = '';
-    if (exclusive.isAutoClicker) {
-      description = 'Automatically clicks 10 times per second!';
-    } else {
-      description = 'Income: ' + this.formatNumber(exclusive.baseIncome) + '/sec';
+    const productKey = Object.keys(PLAY_STORE_PRODUCTS).find(k => PLAY_STORE_PRODUCTS[k].fruitId === exclusive.id);
+    if (!productKey) {
+      this.showNotification('Billing product not configured: ' + exclusive.id);
+      return;
     }
-    
-    // Show payment dialog
-    const confirmed = confirm(exclusive.emoji + ' ' + exclusive.name + '\n\nPrice: ' + exclusive.price + ' грн\n\n' + description + '\n\nDemo version - press OK to purchase.');
-    
-    if (confirmed) {
+
+    buyPlayStoreProduct(productKey).then(result => {
+      if (!result) return;
       this.purchasedExclusiveIds.push(exclusive.id);
       this.exclusiveFruits.push({ ...exclusive, level: 1 });
-      
-      // Activate auto clicker if purchased
       if (exclusive.isAutoClicker) {
         this.activateAutoClicker();
       }
-      
       this.recalculate();
       this.renderGarden();
       this.updateUI();
-      this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased!');
+      this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased' + (result && result.demo ? ' (demo)' : '') + '!');
       this.save();
-    }
+    }).catch(() => {});
   }
 
   activateAutoClicker() {
@@ -347,26 +420,28 @@ class Game {
     }
   }
 
-  buyCoins(amount) {
-    const confirmed = confirm('🪙 Buy ' + this.formatNumber(amount) + ' coins\n\nPrice: 199 грн\n\nDemo version - press OK to get coins.');
-    if (confirmed) {
-      this.coins += amount;
-      this.totalCoins += amount;
+  buyCoins() {
+    const product = PLAY_STORE_PRODUCTS['coins_pack_1'];
+    buyPlayStoreProduct('coins_pack_1').then(result => {
+      if (!result) return;
+      this.coins += product.amount;
+      this.totalCoins += product.amount;
       this.updateUI();
-      this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins received for 199 грн!');
+      this.showNotification('🪙 +' + this.formatNumber(product.amount) + ' coins received' + (result && result.demo ? ' (demo)' : '') + '!');
       this.save();
-    }
+    }).catch(() => {});
   }
 
-  buyCrystals(amount) {
-    const confirmed = confirm('💎 Buy ' + amount + ' crystals\n\nPrice: 199 грн\n\nDemo version - press OK to get crystals.');
-    if (confirmed) {
-      this.crystals += amount;
-      this.totalCrystals += amount;
+  buyCrystals() {
+    const product = PLAY_STORE_PRODUCTS['crystals_pack_1'];
+    buyPlayStoreProduct('crystals_pack_1').then(result => {
+      if (!result) return;
+      this.crystals += product.amount;
+      this.totalCrystals += product.amount;
       this.updateUI();
-      this.showNotification('💎 +' + amount + ' crystals received for 199 грн!');
+      this.showNotification('💎 +' + product.amount + ' crystals received' + (result && result.demo ? ' (demo)' : '') + '!');
       this.save();
-    }
+    }).catch(() => {});
   }
 
   clickFruit(e) {
@@ -534,7 +609,7 @@ class Game {
           <button class="purchase-btn" id="buyCoinsBtn">199 грн</button>
         `;
         purchasesList.appendChild(coinsCard);
-        coinsCard.querySelector('#buyCoinsBtn').addEventListener('click', () => this.buyCoins(1000000));
+        coinsCard.querySelector('#buyCoinsBtn').addEventListener('click', () => this.buyCoins());
 
         const crystalsCard = document.createElement('div');
         crystalsCard.className = 'purchase-item';
@@ -547,7 +622,7 @@ class Game {
           <button class="purchase-btn" id="buyCrystalsBtn">199 грн</button>
         `;
         purchasesList.appendChild(crystalsCard);
-        crystalsCard.querySelector('#buyCrystalsBtn').addEventListener('click', () => this.buyCrystals(1000));
+        crystalsCard.querySelector('#buyCrystalsBtn').addEventListener('click', () => this.buyCrystals());
       }
 
       // Render Exclusive Items
@@ -756,26 +831,17 @@ class Game {
     if (!container) return;
     container.innerHTML = '';
 
-    // Owned fruits
-    const ownedFruits = FRUITS.filter((f, i) => this.fruitCounts[i] > 0);
-    
-    if (ownedFruits.length === 0 && this.exclusiveFruits.length === 0) {
-      container.innerHTML = '<div class="empty-inventory">🔒 Buy fruits to see them in your inventory!</div>';
-      return;
-    }
-
-    // Regular fruits
-    ownedFruits.forEach((fruit, i) => {
-      const fruitIdx = FRUITS.indexOf(fruit);
-      const count = this.fruitCounts[fruitIdx];
-      const level = this.fruitLevels[fruitIdx];
-      const emoji = this.getFruitEmoji(fruit, fruitIdx);
-      const income = this.getFruitIncome(fruit, fruitIdx);
+    FRUITS.forEach((fruit, i) => {
+      const count = this.fruitCounts[i];
+      const level = this.fruitLevels[i];
+      const emoji = this.getFruitEmoji(fruit, i);
+      const income = this.getFruitIncome(fruit, i);
       const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
+      const owned = count > 0;
 
       const card = document.createElement('div');
-      card.className = 'inventory-item' + rarityClass;
-      card.innerHTML = `
+      card.className = 'inventory-item' + (owned ? '' : ' locked') + rarityClass;
+      card.innerHTML = owned ? `
         <div class="inventory-emoji">${emoji}</div>
         <div class="inventory-info">
           <div class="inventory-name">${fruit.name}</div>
@@ -786,24 +852,44 @@ class Game {
           <div class="inventory-income">+${this.formatNumber(income * count)}/сек</div>
         </div>
         ${fruit.rarity ? '<span class="fruit-rarity-tag ' + fruit.rarity + '">' + fruit.rarity.toUpperCase() + '</span>' : ''}
+      ` : `
+        <div class="inventory-emoji">🔒</div>
+        <div class="inventory-info">
+          <div class="inventory-name">${fruit.name}</div>
+          <div class="inventory-details">
+            <span class="inv-count">🔒 Locked</span>
+          </div>
+          <div class="inventory-income">Unlock at ${this.formatNumber(fruit.minCost)} total</div>
+        </div>
       `;
       container.appendChild(card);
     });
 
-    // Exclusive fruits
-    this.exclusiveFruits.forEach((fruit, i) => {
-      const level = this.exclusiveLevels ? this.exclusiveLevels[i] : 1;
+    EXCLUSIVE_FRUITS.forEach(exclusive => {
+      const owned = this.purchasedExclusiveIds.includes(exclusive.id);
+      const level = owned ? (this.exclusiveFruits.find(f => f.id === exclusive.id)?.level || 1) : 1;
+
       const card = document.createElement('div');
-      card.className = 'inventory-item exclusive';
-      card.innerHTML = `
-        <div class="inventory-emoji">${fruit.emoji}</div>
+      card.className = 'inventory-item exclusive' + (owned ? '' : ' locked');
+      card.innerHTML = owned ? `
+        <div class="inventory-emoji">${exclusive.emoji}</div>
         <div class="inventory-info">
-          <div class="inventory-name">${fruit.name}</div>
+          <div class="inventory-name">${exclusive.name}</div>
           <div class="inventory-details">
             <span class="inv-count">x1</span>
             <span class="inv-level">⭐${level}</span>
           </div>
-          <div class="inventory-income">+${this.formatNumber(fruit.baseIncome * level)}/сек</div>
+          <div class="inventory-income">+${this.formatNumber(exclusive.baseIncome * level)}/сек</div>
+        </div>
+        <span class="fruit-rarity-tag exclusive">EXCLUSIVE</span>
+      ` : `
+        <div class="inventory-emoji">🔒</div>
+        <div class="inventory-info">
+          <div class="inventory-name">${exclusive.name}</div>
+          <div class="inventory-details">
+            <span class="inv-count">🔒 Exclusive</span>
+          </div>
+          <div class="inventory-income">${exclusive.price} грн</div>
         </div>
         <span class="fruit-rarity-tag exclusive">EXCLUSIVE</span>
       `;
@@ -857,6 +943,40 @@ class Game {
         const btn = card.querySelector('.upgrade-btn');
         if (btn) {
           btn.addEventListener('click', () => this.buyUpgrade(upgrade.id));
+        }
+      }
+
+      container.appendChild(card);
+    });
+
+    // Per-fruit upgrades
+    FRUITS.forEach((fruit, i) => {
+      if (this.fruitCounts[i] === 0) return;
+      const level = this.fruitLevels[i];
+      const cost = Math.floor(1000 * Math.pow(1.5, level));
+      const canAfford = this.coins >= cost;
+
+      const card = document.createElement('div');
+      card.className = 'upgrade-item fruit-upgrade' + (canAfford ? ' affordable' : '') + (fruit.rarity ? ' ' + fruit.rarity : '');
+      card.innerHTML = `
+        <div class="upgrade-emoji">${fruit.emoji}</div>
+        <div class="upgrade-info">
+          <div class="upgrade-name">${fruit.name}</div>
+          <div class="upgrade-level">Level ${level}</div>
+          <div class="upgrade-effect">+${(level * 10)}% income</div>
+        </div>
+        <div class="upgrade-action">
+          <div class="upgrade-cost">🪙 ${this.formatNumber(cost)}</div>
+          <button class="upgrade-btn fruit-upgrade-btn" data-fruit-upgrade="${i}" ${!canAfford ? 'disabled' : ''}>
+            Upgrade
+          </button>
+        </div>
+      `;
+
+      if (canAfford) {
+        const btn = card.querySelector('.fruit-upgrade-btn');
+        if (btn) {
+          btn.addEventListener('click', () => this.upgradeFruit(i));
         }
       }
 
