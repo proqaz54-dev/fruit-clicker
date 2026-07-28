@@ -266,6 +266,8 @@ class Game {
     this.currentStock = [];
     this.lastStockSeed = -1;
     this.shopStock = [];
+    this.shopBought = new Set();
+    this.lastExitTime = null;
     this.fruitCounts[0] = 1;
 
     this.recalculate();
@@ -700,6 +702,7 @@ class Game {
     
     // Render fruits
     FRUITS.forEach((fruit, i) => {
+      if (this.shopBought.has(fruit.id)) return;
       const count = this.fruitCounts[i];
       const cost = this.getFruitCost(fruit, i);
       const income = this.getFruitIncome(fruit, i);
@@ -1022,6 +1025,7 @@ class Game {
     const fruitIdx = FRUITS.indexOf(fruit);
     this.coins -= totalPrice;
     this.fruitCounts[fruitIdx]++;
+    this.shopBought.add(stockItem.id);
     stockItem.remaining--;
     fruit.unlocked = true;
     this.recalculate();
@@ -1101,32 +1105,41 @@ class Game {
     if (!reward) reward = caseItem.rewards[0];
 
     let rewardText = '';
+    let rewardEmoji = '📦';
+    let rewardTitle = caseItem.name;
     
-    if (reward.type === 'coins') {
-      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-      this.coins += amount;
-      this.totalCoins += amount;
-      rewardText = '🪙 +' + this.formatNumber(amount) + ' coins!';
-    } else if (reward.type === 'crystals') {
-      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-      this.crystals += amount;
-      this.totalCrystals += amount;
-      rewardText = '💎 +' + amount + ' crystals!';
-    } else if (reward.type === 'fruit') {
-      const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
-      const fruit = this.getFruitById(fruitId);
-      const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
-      const fruitIdx = FRUITS.indexOf(fruit);
-      this.fruitCounts[fruitIdx] += qty;
-      fruit.unlocked = true;
-      rewardText = fruit.emoji + ' +' + qty + ' ' + fruit.name + '!';
-      this.recalculate();
-    }
+    // Show case opening animation
+    this.showCaseOpening(caseItem, reward, () => {
+      // Apply reward after animation
+      if (reward.type === 'coins') {
+        const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+        this.coins += amount;
+        this.totalCoins += amount;
+        rewardText = '🪙 +' + this.formatNumber(amount) + ' coins!';
+        rewardEmoji = '🪙';
+      } else if (reward.type === 'crystals') {
+        const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+        this.crystals += amount;
+        this.totalCrystals += amount;
+        rewardText = '💎 +' + amount + ' crystals!';
+        rewardEmoji = '💎';
+      } else if (reward.type === 'fruit') {
+        const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
+        const fruit = this.getFruitById(fruitId);
+        const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
+        const fruitIdx = FRUITS.indexOf(fruit);
+        this.fruitCounts[fruitIdx] += qty;
+        fruit.unlocked = true;
+        rewardText = fruit.emoji + ' +' + qty + ' ' + fruit.name + '!';
+        rewardEmoji = fruit.emoji;
+        this.recalculate();
+      }
 
-    this.updateUI();
-    this.playCrystalSound();
-    this.showNotification('📦 ' + caseItem.name + ': ' + rewardText);
-    this.save();
+      this.updateUI();
+      this.playCrystalSound();
+      this.showNotification('📦 ' + caseItem.name + ': ' + rewardText);
+      this.save();
+    });
   }
 
   // ===== TIME-BASED REWARDS =====
@@ -1304,6 +1317,42 @@ class Game {
     this.save();
   }
 
+  showCaseOpening(caseItem, reward, onClaim) {
+    const overlay = document.getElementById('caseOpeningOverlay');
+    const emojiEl = document.getElementById('caseOpeningEmoji');
+    const titleEl = document.getElementById('caseOpeningTitle');
+    const rewardEl = document.getElementById('caseOpeningReward');
+    const btn = document.getElementById('caseOpeningBtn');
+
+    emojiEl.textContent = caseItem.emoji;
+    titleEl.textContent = caseItem.name;
+    
+    let rewardDisplay = '';
+    if (reward.type === 'coins') {
+      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+      rewardDisplay = '🪙 +' + this.formatNumber(amount);
+    } else if (reward.type === 'crystals') {
+      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+      rewardDisplay = '💎 +' + amount;
+    } else if (reward.type === 'fruit') {
+      const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
+      const fruit = this.getFruitById(fruitId);
+      const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
+      rewardDisplay = fruit.emoji + ' x' + qty;
+    }
+    rewardEl.textContent = rewardDisplay;
+
+    overlay.style.display = 'flex';
+
+    const claim = () => {
+      overlay.style.display = 'none';
+      btn.removeEventListener('click', claim);
+      if (onClaim) onClaim();
+    };
+
+    btn.addEventListener('click', claim);
+  }
+
   showNotification(msg) {
     const el = document.getElementById('notification');
     el.textContent = msg;
@@ -1345,7 +1394,9 @@ class Game {
       purchasedExclusiveIds: this.purchasedExclusiveIds,
       autoClickerActive: this.autoClickerActive,
       lastStockSeed: this.lastStockSeed,
-      shopStock: this.shopStock
+      shopStock: this.shopStock,
+      shopBought: Array.from(this.shopBought),
+      lastExitTime: this.lastExitTime
     };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -1392,6 +1443,12 @@ class Game {
         this.lastStockSeed = data.lastStockSeed;
         this.shopStock = data.shopStock;
       }
+      
+      if (data.shopBought && Array.isArray(data.shopBought)) {
+        this.shopBought = new Set(data.shopBought);
+      }
+      
+      this.lastExitTime = data.lastExitTime || null;
       
       // Load upgrades
       if (data.upgrades) {
@@ -1467,6 +1524,8 @@ class Game {
     this.exclusiveFruits = [];
     this.purchasedExclusiveIds = [];
     this.autoClickerActive = false;
+    this.shopBought = new Set();
+    this.lastExitTime = null;
     
     this.save();
   }
@@ -1575,9 +1634,13 @@ class Game {
       }
     });
 
-    window.addEventListener('beforeunload', () => this.save());
+    window.addEventListener('beforeunload', () => {
+      this.lastExitTime = Date.now();
+      this.save();
+    });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
+        this.lastExitTime = Date.now();
         this.save();
       }
     });
