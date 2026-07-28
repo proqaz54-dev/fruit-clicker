@@ -316,6 +316,25 @@ class Game {
     return this.fruitCounts.reduce((a, b) => a + b, 0);
   }
 
+  getCurrentAvatarEmoji() {
+    let bestIndex = 0;
+    for (let i = FRUITS.length - 1; i >= 0; i--) {
+      if (this.fruitCounts[i] > 0) {
+        bestIndex = i;
+        break;
+      }
+    }
+    return this.getFruitEmoji(FRUITS[bestIndex], bestIndex);
+  }
+
+  updateClickFruitAvatar() {
+    const emoji = this.getCurrentAvatarEmoji();
+    const el = document.getElementById('clickFruit');
+    if (el) {
+      el.textContent = emoji;
+    }
+  }
+
   recalculate() {
     const clickUpgradeLevel = this.getUpgradeLevel('click_power');
     this.clickPower = (1 + clickUpgradeLevel) * this.prestigeMultiplier;
@@ -727,6 +746,8 @@ class Game {
 
     const progress = Math.min(100, (this.coins / 10000) * 100);
     document.getElementById('progressBar').style.width = progress + '%';
+
+    this.updateClickFruitAvatar();
 
     const statsTab = this.currentTab === 'stats';
     if (statsTab) {
@@ -1559,9 +1580,4 @@ class Game {
 
 document.addEventListener('DOMContentLoaded', () => {
   new Game();
-  const img = document.getElementById('clickFruit');
-  if (img && img.tagName === 'IMG') {
-    const ds = img.getAttribute('data-src') || img.getAttribute('src');
-    if (ds) img.src = ds + '?v=' + Date.now();
-  }
 });
