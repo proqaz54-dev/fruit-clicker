@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "./gradlew assembleDebug"
+    "build": "cd android && chmod +x gradlew && ./gradlew assembleDebug || ./gradle/bin/gradle assembleDebug"
   }
 }

@@ -23,14 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm install --no-package-lock
 
-      - name: Validate HTML
-        run: |
-          echo "Checking HTML files..."
-          if grep -r "TODO\|FIXME" --include="*.html" --include="*.js" .; then
-            echo "Found TODO/FIXME comments"
-          fi
-          echo "HTML validation passed"
-
       - name: Validate JavaScript
         run: |
           echo "Checking JavaScript syntax..."
@@ -39,13 +31,48 @@ jobs:
             node --check "$file" && echo "✓ $file is valid"
           done
 
-      - name: Build (if build script exists)
+      - name: Setup Java SDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cache: 'gradle'
+
+      - name: Prepare Gradle Wrapper
         run: |
-          if [ -f "package.json" ] && grep -q '"build"' package.json && [ -f "./gradlew" ]; then
-            npm run build
-          else
-            echo "No build script found, skipping build step"
+          if [ ! -f "android/gradlew" ]; then
+            echo "Gradle wrapper not found, downloading..."
+            cd android
+            curl -sL https://services.gradle.org/distributions/gradle-8.4-bin.zip -o gradle.zip
+            unzip -q gradle.zip
+            mv gradle-8.4 gradle
+            chmod +x gradle/bin/gradle
+            cd ..
           fi
+
+      - name: Build Debug APK
+        run: |
+          cd android
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            ./gradle/bin/gradle assembleDebug
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fruit-clicker-debug-apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
 
       - name: Check for production-ready files
         run: |
@@ -54,7 +81,7 @@ jobs:
           test -f styles.css && echo "✓ styles.css exists"
           test -f js/game.js && echo "✓ js/game.js exists"
 
-      - name: Upload build artifacts
+      - name: Upload web build artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,6 +122,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Validate game functionality
         run: |
