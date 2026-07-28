@@ -1622,3 +1622,85 @@ html, body {
 .upgrade-btn-inline:active {
   transform: scale(0.95);
 }
+
+/* ===== CASE OPENING ANIMATION ===== */
+.case-opening-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.case-opening-content {
+  text-align: center;
+  animation: casePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes casePop {
+  0% { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.case-opening-emoji {
+  font-size: 80px;
+  animation: caseShake 0.6s ease infinite alternate;
+}
+
+@keyframes caseShake {
+  0% { transform: rotate(-5deg) scale(1); }
+  100% { transform: rotate(5deg) scale(1.1); }
+}
+
+.case-opening-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 16px;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.case-opening-reward {
+  font-size: 48px;
+  margin-top: 12px;
+  animation: rewardReveal 0.8s ease forwards;
+}
+
+@keyframes rewardReveal {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.case-opening-btn {
+  margin-top: 24px;
+  background: linear-gradient(135deg, var(--crystal), var(--crystal-dark));
+  border: none;
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 1px;
+  animation: buttonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.case-opening-btn:active {
+  transform: scale(0.95);
+}
