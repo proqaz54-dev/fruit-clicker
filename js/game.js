@@ -1014,6 +1014,43 @@ class Game {
     return FRUITS.find(f => f.id === id);
   }
 
+  getCaseRewardsList(caseItem) {
+    const items = [];
+    caseItem.rewards.forEach(reward => {
+      if (reward.type === 'coins') {
+        items.push({
+          type: 'coins',
+          emoji: '🪙',
+          label: reward.min + '-' + reward.max,
+          chance: reward.chance,
+          raw: reward
+        });
+      } else if (reward.type === 'crystals') {
+        items.push({
+          type: 'crystals',
+          emoji: '💎',
+          label: reward.min + '-' + reward.max,
+          chance: reward.chance,
+          raw: reward
+        });
+      } else if (reward.type === 'fruit') {
+        const fruits = reward.fruitIds.map(id => this.getFruitById(id)).filter(Boolean);
+        const chancePerFruit = reward.chance / fruits.length;
+        fruits.forEach(fruit => {
+          items.push({
+            type: 'fruit',
+            emoji: fruit.emoji,
+            label: fruit.name,
+            fruitId: fruit.id,
+            chance: chancePerFruit,
+            raw: reward
+          });
+        });
+      }
+    });
+    return items;
+  }
+
   buyShopItem(index) {
     const stockItem = this.shopStock[index];
     if (!stockItem || stockItem.remaining <= 0) return;
@@ -1064,11 +1101,23 @@ class Game {
 
       const card = document.createElement('div');
       card.className = 'case-item' + rarityClass;
+
+      const rewardsList = this.getCaseRewardsList(caseItem);
+      let previewHtml = '<div class="case-preview"><div class="case-preview-title">Possible rewards:</div><div class="case-rewards-list">';
+      rewardsList.forEach(item => {
+        previewHtml += `<div class="case-reward-item">
+          <div class="case-reward-display"><span>${item.emoji}</span><span>${item.label}</span></div>
+          <div class="case-reward-chance">${(item.chance * 100).toFixed(1)}%</div>
+        </div>`;
+      });
+      previewHtml += '</div></div>';
+      
       card.innerHTML = `
         <div class="case-emoji">${caseItem.emoji}</div>
         <div class="case-info">
           <div class="case-name">${caseItem.name}</div>
           <div class="case-cost">💎 ${caseItem.cost}</div>
+          ${previewHtml}
         </div>
         <button class="case-btn" data-case-index="${i}"${!canBuy ? ' disabled' : ''}>${canBuy ? 'Open' : 'Need more'}</button>
       `;
@@ -1088,8 +1137,8 @@ class Game {
     if (!caseItem || this.crystals < caseItem.cost) return;
 
     this.crystals -= caseItem.cost;
+    this.updateUI();
     
-    // Pick a random reward
     const roll = Math.random();
     let cumulativeChance = 0;
     let reward = null;
@@ -1104,34 +1153,36 @@ class Game {
 
     if (!reward) reward = caseItem.rewards[0];
 
-    let rewardText = '';
-    let rewardEmoji = '📦';
-    let rewardTitle = caseItem.name;
-    
-    // Show case opening animation
-    this.showCaseOpening(caseItem, reward, () => {
-      // Apply reward after animation
+    let rewardAmount = 0;
+    let fruitId = null;
+    let qty = 0;
+
+    if (reward.type === 'coins') {
+      rewardAmount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+    } else if (reward.type === 'crystals') {
+      rewardAmount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
+    } else if (reward.type === 'fruit') {
+      fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
+      qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
+    }
+
+    this.showCaseOpening(caseItem, reward, fruitId, qty, rewardAmount, () => {
+      let rewardText = '';
+      
       if (reward.type === 'coins') {
-        const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-        this.coins += amount;
-        this.totalCoins += amount;
-        rewardText = '🪙 +' + this.formatNumber(amount) + ' coins!';
-        rewardEmoji = '🪙';
+        this.coins += rewardAmount;
+        this.totalCoins += rewardAmount;
+        rewardText = '🪙 +' + this.formatNumber(rewardAmount) + ' coins!';
       } else if (reward.type === 'crystals') {
-        const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-        this.crystals += amount;
-        this.totalCrystals += amount;
-        rewardText = '💎 +' + amount + ' crystals!';
-        rewardEmoji = '💎';
+        this.crystals += rewardAmount;
+        this.totalCrystals += rewardAmount;
+        rewardText = '💎 +' + rewardAmount + ' crystals!';
       } else if (reward.type === 'fruit') {
-        const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
         const fruit = this.getFruitById(fruitId);
-        const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
         const fruitIdx = FRUITS.indexOf(fruit);
         this.fruitCounts[fruitIdx] += qty;
         fruit.unlocked = true;
         rewardText = fruit.emoji + ' +' + qty + ' ' + fruit.name + '!';
-        rewardEmoji = fruit.emoji;
         this.recalculate();
       }
 
@@ -1317,40 +1368,106 @@ class Game {
     this.save();
   }
 
-  showCaseOpening(caseItem, reward, onClaim) {
+  showCaseOpening(caseItem, reward, fruitId, qty, rewardAmount, onClaim) {
     const overlay = document.getElementById('caseOpeningOverlay');
     const emojiEl = document.getElementById('caseOpeningEmoji');
     const titleEl = document.getElementById('caseOpeningTitle');
     const rewardEl = document.getElementById('caseOpeningReward');
     const btn = document.getElementById('caseOpeningBtn');
+    const strip = document.getElementById('rouletteStrip');
+    const container = document.getElementById('rouletteContainer');
 
+    overlay.classList.add('roulette-mode');
+    overlay.style.display = 'flex';
     emojiEl.textContent = caseItem.emoji;
     titleEl.textContent = caseItem.name;
+    rewardEl.style.display = 'none';
+    rewardEl.classList.remove('roulette-result');
+    btn.style.display = 'none';
+    btn.classList.remove('roulette-claim');
+    container.style.display = 'block';
+
+    const items = this.getCaseRewardsList(caseItem);
     
-    let rewardDisplay = '';
-    if (reward.type === 'coins') {
-      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-      rewardDisplay = '🪙 +' + this.formatNumber(amount);
-    } else if (reward.type === 'crystals') {
-      const amount = Math.floor(Math.random() * (reward.max - reward.min + 1)) + reward.min;
-      rewardDisplay = '💎 +' + amount;
-    } else if (reward.type === 'fruit') {
-      const fruitId = reward.fruitIds[Math.floor(Math.random() * reward.fruitIds.length)];
-      const fruit = this.getFruitById(fruitId);
-      const qty = Math.floor(Math.random() * (reward.maxQty - reward.minQty + 1)) + reward.minQty;
-      rewardDisplay = fruit.emoji + ' x' + qty;
+    strip.innerHTML = '';
+    const repeatCount = 20;
+    for (let r = 0; r < repeatCount; r++) {
+      items.forEach((item) => {
+        const div = document.createElement('div');
+        div.className = 'roulette-item';
+        div.innerHTML = `<span class="item-emoji">${item.emoji}</span><span class="item-label">${item.label}</span>`;
+        strip.appendChild(div);
+      });
     }
-    rewardEl.textContent = rewardDisplay;
 
-    overlay.style.display = 'flex';
+    const totalItems = items.length;
+    const itemWidth = 120;
+    const containerWidth = 280;
+    const centerOffset = containerWidth / 2 - itemWidth / 2;
 
-    const claim = () => {
-      overlay.style.display = 'none';
-      btn.removeEventListener('click', claim);
-      if (onClaim) onClaim();
+    let winItemIndex = -1;
+    for (let i = 0; i < items.length; i++) {
+      if (reward.type === 'fruit' && items[i].type === 'fruit' && items[i].fruitId === fruitId) {
+        winItemIndex = i;
+        break;
+      } else if (reward.type !== 'fruit' && items[i].type === reward.type) {
+        winItemIndex = i;
+        break;
+      }
+    }
+    if (winItemIndex === -1) winItemIndex = 0;
+
+    const targetRepeat = Math.floor(Math.random() * 12) + 3;
+    const targetIndex = targetRepeat * totalItems + winItemIndex;
+    let targetOffset = -(targetIndex * itemWidth - centerOffset);
+    const maxOffset = -(strip.scrollWidth - containerWidth);
+    targetOffset = Math.max(maxOffset + 20, Math.min(targetOffset, -20));
+
+    const startOffset = 0;
+    const distance = targetOffset - startOffset;
+    const duration = 3500;
+    const startTime = performance.now();
+
+    const animate = (time) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const current = startOffset + distance * eased;
+      strip.style.transform = `translateX(${current}px)`;
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        container.style.display = 'none';
+        rewardEl.style.display = 'block';
+        rewardEl.classList.add('roulette-result');
+
+        let rewardDisplay = '';
+        if (reward.type === 'coins') {
+          rewardDisplay = '🪙 +' + this.formatNumber(rewardAmount);
+        } else if (reward.type === 'crystals') {
+          rewardDisplay = '💎 +' + rewardAmount;
+        } else if (reward.type === 'fruit') {
+          const fruit = this.getFruitById(fruitId);
+          rewardDisplay = fruit.emoji + ' x' + qty;
+        }
+        rewardEl.textContent = rewardDisplay;
+
+        btn.style.display = 'block';
+        btn.classList.add('roulette-claim');
+
+        const claim = () => {
+          overlay.style.display = 'none';
+          overlay.classList.remove('roulette-mode');
+          btn.removeEventListener('click', claim);
+          if (onClaim) onClaim();
+        };
+
+        btn.addEventListener('click', claim);
+      }
     };
 
-    btn.addEventListener('click', claim);
+    requestAnimationFrame(animate);
   }
 
   showNotification(msg) {
