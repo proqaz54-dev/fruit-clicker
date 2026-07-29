@@ -54,6 +54,17 @@ jobs:
           test -f styles.css && echo "✓ styles.css exists"
           test -f js/game.js && echo "✓ js/game.js exists"
 
+      - name: Prepare web assets for Android
+        run: |
+          echo "Copying web assets into Android project..."
+          rm -rf android/app/src/main/assets
+          mkdir -p android/app/src/main/assets
+          cp index.html android/app/src/main/assets/
+          cp styles.css android/app/src/main/assets/
+          cp -r js android/app/src/main/assets/
+          ls -la android/app/src/main/assets/
+          ls -la android/app/src/main/assets/js/
+
       - name: Build Debug APK
         run: |
           cd android
