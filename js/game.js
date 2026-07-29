@@ -699,53 +699,50 @@ class Game {
     const list = document.getElementById('fruitsList');
     list.innerHTML = '';
     
-    // Render fruits from global stock only
-    const stockIds = new Set(this.shopStock.map(s => s.id));
-    const stockFruits = stockIds.size > 0 ? FRUITS.filter((_, i) => stockIds.has(FRUITS[i].id)) : [];
-    
-    if (stockFruits.length > 0) {
-      stockFruits.forEach((fruit, idx) => {
-        const i = FRUITS.indexOf(fruit);
-        const count = this.fruitCounts[i];
-        const cost = this.getFruitCost(fruit, i);
-        const income = this.getFruitIncome(fruit, i);
-        const affordable = this.coins >= cost;
-        const emoji = this.getFruitEmoji(fruit, i);
-        const level = this.fruitLevels[i];
+    // Render owned fruits in garden
+    FRUITS.forEach((fruit, i) => {
+      if (this.fruitCounts[i] === 0) return;
+      const count = this.fruitCounts[i];
+      const cost = this.getFruitCost(fruit, i);
+      const income = this.getFruitIncome(fruit, i);
+      const emoji = this.getFruitEmoji(fruit, i);
+      const level = this.fruitLevels[i];
 
-        const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
-        const card = document.createElement('div');
-        card.className = 'fruit-card affordable' + rarityClass;
-        card.innerHTML = `
-          <div class="fruit-card-emoji">${emoji}</div>
-          <div class="fruit-card-info">
-            <div class="fruit-card-name">
-              ${fruit.name}
-              ${count > 0 ? '<span class="fruit-card-count">x' + count + '</span>' : ''}
-              ${level > 1 ? '<span class="fruit-level">⭐' + level + '</span>' : ''}
-              ${fruit.rarity ? '<span class="fruit-rarity-tag ' + fruit.rarity + '">' + fruit.rarity.toUpperCase() + '</span>' : ''}
-            </div>
-            <div class="fruit-card-income">+${income.toFixed(0)}/sec</div>
-            <div class="fruit-card-cost">
-              🪙 ${this.formatNumber(cost)}
-              ${count > 0 ? '<button class="upgrade-btn" data-upgrade-fruit="' + i + '">⬆️ ' + this.formatNumber(Math.floor(1000 * Math.pow(1.5, level))) + '</button>' : ''}
-            </div>
-            <div class="buy-indicator">${affordable ? 'Tap to buy' : 'Not enough'}</div>
+      const rarityClass = fruit.rarity ? ' ' + fruit.rarity : '';
+      const card = document.createElement('div');
+      card.className = 'fruit-card affordable' + rarityClass;
+      card.innerHTML = `
+        <div class="fruit-card-emoji">${emoji}</div>
+        <div class="fruit-card-info">
+          <div class="fruit-card-name">
+            ${fruit.name}
+            <span class="fruit-card-count">x${count}</span>
+            ${level > 1 ? '<span class="fruit-level">⭐' + level + '</span>' : ''}
+            ${fruit.rarity ? '<span class="fruit-rarity-tag ' + fruit.rarity + '">' + fruit.rarity.toUpperCase() + '</span>' : ''}
           </div>
-        `;
+          <div class="fruit-card-income">+${income.toFixed(0)}/sec</div>
+          <div class="fruit-card-cost">
+            🪙 ${this.formatNumber(cost)}
+            <button class="upgrade-btn" data-upgrade-fruit="${i}">⬆️ ${this.formatNumber(Math.floor(1000 * Math.pow(1.5, level)))}</button>
+          </div>
+        </div>
+      `;
 
-        card.addEventListener('click', (e) => {
-          if (e.target.classList.contains('upgrade-btn')) {
-            this.upgradeFruit(i);
-          } else if (affordable) {
-            this.buyFruit(i);
-          } else {
-            this.showNotification('Not enough coins');
-          }
-        });
-
-        list.appendChild(card);
+      card.addEventListener('click', (e) => {
+        if (e.target.classList.contains('upgrade-btn')) {
+          this.upgradeFruit(i);
+        } else if (this.coins >= cost) {
+          this.buyFruit(i);
+        } else {
+          this.showNotification('Not enough coins');
+        }
       });
+
+      list.appendChild(card);
+    });
+
+    if (list.innerHTML === '') {
+      list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Buy fruits from Global Stock to see them here</div>';
     }
   }
 
