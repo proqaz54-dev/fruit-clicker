@@ -1711,5 +1711,14 @@ class Game {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  window.onerror = (msg, url, line) => {
+    const n = document.getElementById('notification');
+    if (n) {
+      n.textContent = 'Error: ' + msg + ' (line ' + line + ')';
+      n.style.display = 'block';
+    }
+    console.log('Error:', msg, url, line);
+    return false;
+  };
   new Game();
 });
