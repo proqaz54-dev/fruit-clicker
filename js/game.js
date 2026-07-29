@@ -268,7 +268,6 @@ class Game {
     this.shopStock = [];
     this.shopBought = new Set();
     this.lastExitTime = null;
-    this.fruitCounts[0] = 1;
 
     this.recalculate();
     this.load();
@@ -838,7 +837,6 @@ class Game {
     this.coins = 0;
     this.fruitCounts = FRUITS.map(() => 0);
     this.fruitLevels = FRUITS.map(() => 1);
-    this.fruitCounts[0] = 1;
     this.totalClicks = 0;
     this.recalculate();
     this.renderGarden();
@@ -1546,7 +1544,6 @@ class Game {
       
       const oldCounts = data.fruitCounts || [];
       this.fruitCounts = FRUITS.map((_, i) => oldCounts[i] || 0);
-      this.fruitCounts[0] = Math.max(1, this.fruitCounts[0]);
       
       const oldLevels = data.fruitLevels || [];
       this.fruitLevels = FRUITS.map((_, i) => oldLevels[i] || 1);
@@ -1622,7 +1619,6 @@ class Game {
     
     const oldCounts = data.fruitCounts || [];
     this.fruitCounts = FRUITS.map((_, i) => oldCounts[i] || 0);
-    this.fruitCounts[0] = Math.max(1, this.fruitCounts[0]);
     this.fruitLevels = FRUITS.map(() => 1);
     
     this.crystals = data.crystals || 0;
