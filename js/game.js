@@ -72,34 +72,34 @@ const SHOP_ITEMS = [
 // Crystal cases
 const CRYSTAL_CASES = [
   { id: 'basic', name: 'Basic Case', emoji: '📦', cost: 10, rewards: [
-    { type: 'coins', chance: 0.5, min: 100, max: 500 },
-    { type: 'crystals', chance: 0.3, min: 1, max: 3 },
-    { type: 'fruit', chance: 0.2, fruitIds: ['apple', 'banana', 'orange'], minQty: 1, maxQty: 3 }
+    { type: 'coins', chance: 0.6, min: 100, max: 500 },
+    { type: 'crystals', chance: 0.25, min: 1, max: 3 },
+    { type: 'fruit', chance: 0.15, fruitIds: ['apple', 'banana', 'orange'], minQty: 1, maxQty: 3 }
   ]},
   { id: 'premium', name: 'Premium Case', emoji: '🎁', cost: 50, rewards: [
-    { type: 'coins', chance: 0.4, min: 1000, max: 5000 },
-    { type: 'crystals', chance: 0.35, min: 5, max: 15 },
+    { type: 'coins', chance: 0.35, min: 1000, max: 5000 },
+    { type: 'crystals', chance: 0.4, min: 5, max: 15 },
     { type: 'fruit', chance: 0.25, fruitIds: ['lemon', 'grape', 'strawberry'], minQty: 1, maxQty: 2 }
   ]},
   { id: 'rare', name: 'Rare Case', emoji: '💎', cost: 100, rewards: [
-    { type: 'coins', chance: 0.3, min: 5000, max: 20000 },
-    { type: 'crystals', chance: 0.4, min: 10, max: 30 },
-    { type: 'fruit', chance: 0.3, fruitIds: ['cherry', 'kiwi', 'mango', 'dragonfruit'], minQty: 1, maxQty: 1 }
+    { type: 'coins', chance: 0.25, min: 5000, max: 20000 },
+    { type: 'crystals', chance: 0.35, min: 10, max: 30 },
+    { type: 'fruit', chance: 0.4, fruitIds: ['cherry', 'kiwi', 'mango', 'dragonfruit'], minQty: 1, maxQty: 1 }
   ]},
   { id: 'epic', name: 'Epic Case', emoji: '👑', cost: 250, rewards: [
-    { type: 'coins', chance: 0.2, min: 20000, max: 100000 },
-    { type: 'crystals', chance: 0.4, min: 25, max: 75 },
-    { type: 'fruit', chance: 0.4, fruitIds: ['pineapple', 'watermelon', 'durian', 'passionfruit'], minQty: 1, maxQty: 1 }
+    { type: 'coins', chance: 0.15, min: 20000, max: 100000 },
+    { type: 'crystals', chance: 0.35, min: 25, max: 75 },
+    { type: 'fruit', chance: 0.5, fruitIds: ['pineapple', 'watermelon', 'durian', 'passionfruit'], minQty: 1, maxQty: 1 }
   ]},
   { id: 'legendary', name: 'Legendary Case', emoji: '🌟', cost: 500, rewards: [
-    { type: 'coins', chance: 0.15, min: 100000, max: 500000 },
-    { type: 'crystals', chance: 0.45, min: 50, max: 150 },
-    { type: 'fruit', chance: 0.4, fruitIds: ['coconut', 'starfruit', 'lychee', 'rambutan'], minQty: 1, maxQty: 1 }
+    { type: 'coins', chance: 0.1, min: 100000, max: 500000 },
+    { type: 'crystals', chance: 0.4, min: 50, max: 150 },
+    { type: 'fruit', chance: 0.5, fruitIds: ['coconut', 'starfruit', 'lychee', 'rambutan'], minQty: 1, maxQty: 1 }
   ]},
   { id: 'mythic', name: 'Mythic Case', emoji: '🧚', cost: 1000, rewards: [
-    { type: 'coins', chance: 0.1, min: 500000, max: 2000000 },
-    { type: 'crystals', chance: 0.4, min: 100, max: 300 },
-    { type: 'fruit', chance: 0.5, fruitIds: ['fairyfruit', 'dungeonfruit', 'cosmicfruit', 'godfruit', 'eternalfruit'], minQty: 1, maxQty: 1 }
+    { type: 'coins', chance: 0.05, min: 500000, max: 2000000 },
+    { type: 'crystals', chance: 0.35, min: 100, max: 300 },
+    { type: 'fruit', chance: 0.6, fruitIds: ['fairyfruit', 'dungeonfruit', 'cosmicfruit', 'godfruit', 'eternalfruit'], minQty: 1, maxQty: 1 }
   ]},
 ];
 
