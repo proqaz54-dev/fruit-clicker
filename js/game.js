@@ -139,6 +139,15 @@ function getStockSeed() {
 const SAVE_KEY = 'fruitclicker_save_v2';
 const SAVE_VERSION = 2;
 
+const AD_CONFIG = {
+  publisherId: 'ca-pub-XXXXXXXXXXXXXXXX',
+  bannerSlot: 'XXXXXXXXXX',
+  interstitialSlot: 'XXXXXXXXXX',
+  rewardedSlot: 'XXXXXXXXXX',
+  interstitialTriggerInterval: 3,
+  interstitialMinInterval: 60000,
+};
+
 const PLAY_STORE_PRODUCTS = {
   coins_pack_1: { id: 'coins_pack_1', type: 'coins', amount: 1000000, price: 199, currency: 'UAH' },
   crystals_pack_1: { id: 'crystals_pack_1', type: 'crystals', amount: 1000, price: 199, currency: 'UAH' },
@@ -263,13 +272,18 @@ class Game {
     this.lastDailyRewardDate = null;
     this.claimedDailyRewardToday = false;
 
-    this.currentStock = [];
-    this.lastStockSeed = -1;
-    this.shopStock = [];
-    this.shopBought = new Set();
-    this.lastExitTime = null;
+     this.currentStock = [];
+     this.lastStockSeed = -1;
+     this.shopStock = [];
+     this.shopBought = new Set();
+     this.lastExitTime = null;
 
-    this.recalculate();
+     // Ads
+     this._lastInterstitialTime = 0;
+     this._rewardedCallback = null;
+     this._tabSwitchCount = 0;
+
+     this.recalculate();
     this.load();
     this.checkDailyReward();
     this.generateStock();
@@ -277,9 +291,12 @@ class Game {
     this.renderGarden();
     this.updateUI();
     this.startTimers();
-    this.checkTimeRewards();
-    this.showTab('garden');
-  }
+     this.checkTimeRewards();
+     this.showTab('garden');
+     this.initAds();
+     this.loadBannerAds();
+     this.setupAdListeners();
+   }
 
   getUpgradeLevel(id) {
     return this.upgrades[id] || 0;
@@ -592,10 +609,15 @@ class Game {
       shopHtml += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
       shopHtml += '<div class="shop-list" id="gardenExclusiveList"></div>';
 
-      shopHtml += '</div>';
-      shopContainer.innerHTML = shopHtml;
+       // === WATCH AD SECTION ===
+       shopHtml += '<h3 class="shop-section-title">📺 Watch Ad for Coins</h3>';
+       shopHtml += '<p class="shop-desc">Watch a short ad to earn free coins!</p>';
+       shopHtml += '<button class="shop-btn" id="watchAdBtn" style="width:100%;margin-top:8px;">▶️ Watch Ad</button>';
 
-      // Render Shop Stock Items
+       shopHtml += '</div>';
+       shopContainer.innerHTML = shopHtml;
+
+       // Render Shop Stock Items
       const stockList = document.getElementById('gardenShopList');
       if (stockList && this.shopStock.length > 0) {
         this.shopStock.forEach((item, i) => {
@@ -693,8 +715,25 @@ class Game {
         });
       }
 
-      this.updateShopTimer();
-    }
+       this.updateShopTimer();
+
+       // Watch Ad button listener
+       const watchAdBtn = document.getElementById('watchAdBtn');
+       if (watchAdBtn) {
+         watchAdBtn.addEventListener('click', () => {
+           this.showRewardedAd((watched) => {
+             if (watched) {
+               const reward = 500;
+               this.coins += reward;
+               this.totalCoins += reward;
+               this.updateUI();
+               this.showNotification('📺 Ad watched! +' + this.formatNumber(reward) + ' coins!');
+               this.save();
+             }
+           });
+         });
+       }
+     }
 
     const list = document.getElementById('fruitsList');
     if (list) {
@@ -751,13 +790,18 @@ class Game {
     }
   }
 
-  showTab(tab) {
-    this.currentTab = tab;
-    document.querySelectorAll('.footer-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === tab);
-    });
-    
-    // Hide all tabs first
+   showTab(tab) {
+     this.currentTab = tab;
+     document.querySelectorAll('.footer-btn').forEach(btn => {
+       btn.classList.toggle('active', btn.dataset.tab === tab);
+     });
+
+     this._tabSwitchCount++;
+     if (this._tabSwitchCount % AD_CONFIG.interstitialTriggerInterval === 0) {
+       this.triggerInterstitialIfReady();
+     }
+
+     // Hide all tabs first
     document.getElementById('tabStats').style.display = 'none';
     document.getElementById('tabCases').style.display = 'none';
     document.getElementById('tabRewards').style.display = 'none';
@@ -1322,8 +1366,9 @@ class Game {
     this.save();
   }
 
-  showCaseOpening(caseItem, reward, fruitId, qty, rewardAmount, onClaim) {
-    const overlay = document.getElementById('caseOpeningOverlay');
+   showCaseOpening(caseItem, reward, fruitId, qty, rewardAmount, onClaim) {
+     this.triggerInterstitialIfReady();
+     const overlay = document.getElementById('caseOpeningOverlay');
     const emojiEl = document.getElementById('caseOpeningEmoji');
     const titleEl = document.getElementById('caseOpeningTitle');
     const rewardEl = document.getElementById('caseOpeningReward');
@@ -1669,7 +1714,98 @@ class Game {
     el.classList.toggle('urgent', remaining < 30000);
   }
 
-  setupEventListeners() {
+   // ===== ADS =====
+   initAds() {
+     if (typeof adsbygoogle === 'undefined') return;
+     try {
+       adsbygoogle.push({});
+     } catch (e) {
+       console.log('AdSense push error:', e);
+     }
+   }
+
+   loadBannerAds() {
+     if (typeof adsbygoogle === 'undefined') return;
+     try {
+       const topBanner = document.getElementById('adTopBanner');
+       const bottomBanner = document.getElementById('adBottomBanner');
+       if (topBanner) {
+         topBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.bannerSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+         adsbygoogle.push({});
+       }
+       if (bottomBanner) {
+         bottomBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.bannerSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+         adsbygoogle.push({});
+       }
+     } catch (e) {
+       console.log('Banner ad load error:', e);
+     }
+   }
+
+   showInterstitial() {
+     if (typeof adsbygoogle === 'undefined') return;
+     const overlay = document.getElementById('adInterstitialOverlay');
+     if (!overlay) return;
+     const now = Date.now();
+     if (this._lastInterstitialTime && (now - this._lastInterstitialTime) < AD_CONFIG.interstitialMinInterval) return;
+     try {
+       overlay.style.display = 'flex';
+       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.interstitialSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
+       adsbygoogle.push({});
+       this._lastInterstitialTime = now;
+     } catch (e) {
+       console.log('Interstitial ad error:', e);
+       overlay.style.display = 'none';
+     }
+   }
+
+   hideInterstitial() {
+     const overlay = document.getElementById('adInterstitialOverlay');
+     if (overlay) overlay.style.display = 'none';
+   }
+
+   showRewardedAd(callback) {
+     if (typeof adsbygoogle === 'undefined') {
+       if (callback) callback(false);
+       return;
+     }
+     try {
+       const overlay = document.getElementById('adInterstitialOverlay');
+       if (!overlay) { if (callback) callback(false); return; }
+       overlay.style.display = 'flex';
+       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.rewardedSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins><p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:12px;">Watch an ad to earn rewards!</p><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
+       adsbygoogle.push({});
+       this._rewardedCallback = callback;
+     } catch (e) {
+       console.log('Rewarded ad error:', e);
+       overlay.style.display = 'none';
+       if (callback) callback(false);
+     }
+   }
+
+   setupAdListeners() {
+     const overlay = document.getElementById('adInterstitialOverlay');
+     if (!overlay) return;
+     overlay.addEventListener('click', (e) => {
+       if (e.target === overlay || e.target.closest('.ad-close-btn')) {
+         this.hideInterstitial();
+         if (this._rewardedCallback) {
+           const cb = this._rewardedCallback;
+           this._rewardedCallback = null;
+           cb(true);
+         }
+       }
+     });
+   }
+
+   triggerInterstitialIfReady() {
+     const now = Date.now();
+     if (!this._lastInterstitialTime || (now - this._lastInterstitialTime) >= AD_CONFIG.interstitialMinInterval) {
+       this.showInterstitial();
+     }
+   }
+
+   setupEventListeners() {
     const clickArea = document.getElementById('clickArea');
     clickArea.addEventListener('click', (e) => {
       if (e.target.closest('.fruit-card')) return;
@@ -1701,13 +1837,15 @@ class Game {
       this.lastExitTime = Date.now();
       this.save();
     });
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        this.lastExitTime = Date.now();
-        this.save();
-      }
-    });
-  }
+     document.addEventListener('visibilitychange', () => {
+       if (document.visibilityState === 'hidden') {
+         this.lastExitTime = Date.now();
+         this.save();
+       }
+     });
+
+     this.setupAdListeners();
+   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

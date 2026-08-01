@@ -1854,3 +1854,77 @@ html, body {
 .case-opening-btn:active {
   transform: scale(0.95);
 }
+
+/* ===== AD CONTAINERS ===== */
+.ad-container {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+#adTopBanner {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+#adBottomBanner {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.ad-interstitial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.ad-interstitial-content {
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+  background: linear-gradient(145deg, var(--bg-start), var(--bg-end));
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid var(--card-border);
+}
+
+.ad-interstitial-content ins {
+  display: block;
+  min-height: 300px;
+}
+
+.ad-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  z-index: 10;
+}
+
+.ad-close-btn:active {
+  transform: scale(0.9);
+}
