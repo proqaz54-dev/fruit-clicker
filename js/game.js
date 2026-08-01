@@ -140,10 +140,10 @@ const SAVE_KEY = 'fruitclicker_save_v2';
 const SAVE_VERSION = 2;
 
 const AD_CONFIG = {
-  publisherId: 'ca-pub-XXXXXXXXXXXXXXXX',
-  bannerSlot: 'XXXXXXXXXX',
-  interstitialSlot: 'XXXXXXXXXX',
-  rewardedSlot: 'XXXXXXXXXX',
+  appId: 'ca-app-pub-2369179575521282~4054146258',
+  bannerAdUnitId: 'ca-app-pub-2369179575521282/5666344897',
+  interstitialAdUnitId: 'ca-app-pub-2369179575521282/XXXXXXXXXX',
+  rewardedAdUnitId: 'ca-app-pub-2369179575521282/XXXXXXXXXX',
   interstitialTriggerInterval: 3,
   interstitialMinInterval: 60000,
 };
@@ -1730,11 +1730,11 @@ class Game {
        const topBanner = document.getElementById('adTopBanner');
        const bottomBanner = document.getElementById('adBottomBanner');
        if (topBanner) {
-         topBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.bannerSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+         topBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.bannerAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
          adsbygoogle.push({});
        }
        if (bottomBanner) {
-         bottomBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.bannerSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+         bottomBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.bannerAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
          adsbygoogle.push({});
        }
      } catch (e) {
@@ -1750,7 +1750,7 @@ class Game {
      if (this._lastInterstitialTime && (now - this._lastInterstitialTime) < AD_CONFIG.interstitialMinInterval) return;
      try {
        overlay.style.display = 'flex';
-       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.interstitialSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
+       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.interstitialAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
        adsbygoogle.push({});
        this._lastInterstitialTime = now;
      } catch (e) {
@@ -1773,7 +1773,7 @@ class Game {
        const overlay = document.getElementById('adInterstitialOverlay');
        if (!overlay) { if (callback) callback(false); return; }
        overlay.style.display = 'flex';
-       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.publisherId + '" data-ad-slot="' + AD_CONFIG.rewardedSlot + '" data-ad-format="auto" data-full-width-responsive="true"></ins><p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:12px;">Watch an ad to earn rewards!</p><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
+       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.rewardedAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins><p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:12px;">Watch an ad to earn rewards!</p><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
        adsbygoogle.push({});
        this._rewardedCallback = callback;
      } catch (e) {
