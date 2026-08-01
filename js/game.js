@@ -142,10 +142,6 @@ const SAVE_VERSION = 2;
 const AD_CONFIG = {
   appId: 'ca-app-pub-2369179575521282~4054146258',
   bannerAdUnitId: 'ca-app-pub-2369179575521282/5666344897',
-  interstitialAdUnitId: 'ca-app-pub-2369179575521282/XXXXXXXXXX',
-  rewardedAdUnitId: 'ca-app-pub-2369179575521282/XXXXXXXXXX',
-  interstitialTriggerInterval: 3,
-  interstitialMinInterval: 60000,
 };
 
 const PLAY_STORE_PRODUCTS = {
@@ -278,11 +274,6 @@ class Game {
      this.shopBought = new Set();
      this.lastExitTime = null;
 
-     // Ads
-     this._lastInterstitialTime = 0;
-     this._rewardedCallback = null;
-     this._tabSwitchCount = 0;
-
      this.recalculate();
     this.load();
     this.checkDailyReward();
@@ -293,9 +284,6 @@ class Game {
     this.startTimers();
      this.checkTimeRewards();
      this.showTab('garden');
-     this.initAds();
-     this.loadBannerAds();
-     this.setupAdListeners();
    }
 
   getUpgradeLevel(id) {
@@ -609,11 +597,6 @@ class Game {
       shopHtml += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
       shopHtml += '<div class="shop-list" id="gardenExclusiveList"></div>';
 
-       // === WATCH AD SECTION ===
-       shopHtml += '<h3 class="shop-section-title">📺 Watch Ad for Coins</h3>';
-       shopHtml += '<p class="shop-desc">Watch a short ad to earn free coins!</p>';
-       shopHtml += '<button class="shop-btn" id="watchAdBtn" style="width:100%;margin-top:8px;">▶️ Watch Ad</button>';
-
        shopHtml += '</div>';
        shopContainer.innerHTML = shopHtml;
 
@@ -716,23 +699,6 @@ class Game {
       }
 
        this.updateShopTimer();
-
-       // Watch Ad button listener
-       const watchAdBtn = document.getElementById('watchAdBtn');
-       if (watchAdBtn) {
-         watchAdBtn.addEventListener('click', () => {
-           this.showRewardedAd((watched) => {
-             if (watched) {
-               const reward = 500;
-               this.coins += reward;
-               this.totalCoins += reward;
-               this.updateUI();
-               this.showNotification('📺 Ad watched! +' + this.formatNumber(reward) + ' coins!');
-               this.save();
-             }
-           });
-         });
-       }
      }
 
     const list = document.getElementById('fruitsList');
@@ -795,11 +761,6 @@ class Game {
      document.querySelectorAll('.footer-btn').forEach(btn => {
        btn.classList.toggle('active', btn.dataset.tab === tab);
      });
-
-     this._tabSwitchCount++;
-     if (this._tabSwitchCount % AD_CONFIG.interstitialTriggerInterval === 0) {
-       this.triggerInterstitialIfReady();
-     }
 
      // Hide all tabs first
     document.getElementById('tabStats').style.display = 'none';
@@ -1367,7 +1328,6 @@ class Game {
   }
 
    showCaseOpening(caseItem, reward, fruitId, qty, rewardAmount, onClaim) {
-     this.triggerInterstitialIfReady();
      const overlay = document.getElementById('caseOpeningOverlay');
     const emojiEl = document.getElementById('caseOpeningEmoji');
     const titleEl = document.getElementById('caseOpeningTitle');
@@ -1714,97 +1674,6 @@ class Game {
     el.classList.toggle('urgent', remaining < 30000);
   }
 
-   // ===== ADS =====
-   initAds() {
-     if (typeof adsbygoogle === 'undefined') return;
-     try {
-       adsbygoogle.push({});
-     } catch (e) {
-       console.log('AdSense push error:', e);
-     }
-   }
-
-   loadBannerAds() {
-     if (typeof adsbygoogle === 'undefined') return;
-     try {
-       const topBanner = document.getElementById('adTopBanner');
-       const bottomBanner = document.getElementById('adBottomBanner');
-       if (topBanner) {
-         topBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.bannerAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
-         adsbygoogle.push({});
-       }
-       if (bottomBanner) {
-         bottomBanner.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.bannerAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins>';
-         adsbygoogle.push({});
-       }
-     } catch (e) {
-       console.log('Banner ad load error:', e);
-     }
-   }
-
-   showInterstitial() {
-     if (typeof adsbygoogle === 'undefined') return;
-     const overlay = document.getElementById('adInterstitialOverlay');
-     if (!overlay) return;
-     const now = Date.now();
-     if (this._lastInterstitialTime && (now - this._lastInterstitialTime) < AD_CONFIG.interstitialMinInterval) return;
-     try {
-       overlay.style.display = 'flex';
-       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.interstitialAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
-       adsbygoogle.push({});
-       this._lastInterstitialTime = now;
-     } catch (e) {
-       console.log('Interstitial ad error:', e);
-       overlay.style.display = 'none';
-     }
-   }
-
-   hideInterstitial() {
-     const overlay = document.getElementById('adInterstitialOverlay');
-     if (overlay) overlay.style.display = 'none';
-   }
-
-   showRewardedAd(callback) {
-     if (typeof adsbygoogle === 'undefined') {
-       if (callback) callback(false);
-       return;
-     }
-     try {
-       const overlay = document.getElementById('adInterstitialOverlay');
-       if (!overlay) { if (callback) callback(false); return; }
-       overlay.style.display = 'flex';
-       overlay.innerHTML = '<div class="ad-interstitial-content"><ins class="adsbygoogle" style="display:block" data-ad-client="' + AD_CONFIG.appId + '" data-ad-slot="' + AD_CONFIG.rewardedAdUnitId + '" data-ad-format="auto" data-full-width-responsive="true"></ins><p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:12px;">Watch an ad to earn rewards!</p><button class="ad-close-btn" id="adCloseBtn">✕</button></div>';
-       adsbygoogle.push({});
-       this._rewardedCallback = callback;
-     } catch (e) {
-       console.log('Rewarded ad error:', e);
-       overlay.style.display = 'none';
-       if (callback) callback(false);
-     }
-   }
-
-   setupAdListeners() {
-     const overlay = document.getElementById('adInterstitialOverlay');
-     if (!overlay) return;
-     overlay.addEventListener('click', (e) => {
-       if (e.target === overlay || e.target.closest('.ad-close-btn')) {
-         this.hideInterstitial();
-         if (this._rewardedCallback) {
-           const cb = this._rewardedCallback;
-           this._rewardedCallback = null;
-           cb(true);
-         }
-       }
-     });
-   }
-
-   triggerInterstitialIfReady() {
-     const now = Date.now();
-     if (!this._lastInterstitialTime || (now - this._lastInterstitialTime) >= AD_CONFIG.interstitialMinInterval) {
-       this.showInterstitial();
-     }
-   }
-
    setupEventListeners() {
     const clickArea = document.getElementById('clickArea');
     clickArea.addEventListener('click', (e) => {
@@ -1837,16 +1706,14 @@ class Game {
       this.lastExitTime = Date.now();
       this.save();
     });
-     document.addEventListener('visibilitychange', () => {
-       if (document.visibilityState === 'hidden') {
-         this.lastExitTime = Date.now();
-         this.save();
-       }
-     });
-
-     this.setupAdListeners();
-   }
-}
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          this.lastExitTime = Date.now();
+          this.save();
+        }
+      });
+    }
+  }
 
 document.addEventListener('DOMContentLoaded', () => {
   window.onerror = (msg, url, line) => {
