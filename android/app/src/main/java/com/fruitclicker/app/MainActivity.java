@@ -18,7 +18,6 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.LoadAdError;
 
 import com.fruitclicker.app.billing.BillingManager;
 
@@ -51,6 +50,18 @@ public class MainActivity extends Activity {
         );
         rootLayout.addView(webView, webParams);
 
+        adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId(AD_UNIT_ID);
+
+        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        rootLayout.addView(adView, adParams);
+
+        setContentView(rootLayout);
+
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -62,7 +73,23 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setSupportZoom(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                try {
+                    MobileAds.initialize(MainActivity.this, initializationStatus -> {
+                        Log.d(TAG, "AdMob initialized");
+                        loadBannerAd();
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "AdMob initialization failed", e);
+                    if (adView != null) {
+                        adView.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient());
 
         billingManager = new BillingManager(this, webView);
@@ -79,30 +106,6 @@ public class MainActivity extends Activity {
                 return billingManager.isAvailable();
             }
         }, "AndroidBilling");
-
-        adView = new AdView(this);
-        adView.setAdSize(AdSize.BANNER);
-        adView.setAdUnitId(AD_UNIT_ID);
-
-        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        rootLayout.addView(adView, adParams);
-
-        setContentView(rootLayout);
-
-        try {
-            MobileAds.initialize(this, initializationStatus -> {
-                Log.d(TAG, "AdMob initialized: " + initializationStatus);
-                loadBannerAd();
-            });
-        } catch (Exception e) {
-            Log.e(TAG, "AdMob initialization failed", e);
-            if (adView != null) {
-                adView.setVisibility(View.GONE);
-            }
-        }
 
         webView.loadUrl("file:///android_asset/index.html");
     }
@@ -125,7 +128,7 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             controller = getWindow().getInsetsController();
             if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                controller.hide(WindowInsets.Type.statusBars());
                 controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         } else {
@@ -135,10 +138,7 @@ public class MainActivity extends Activity {
             );
             getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             );
         }
