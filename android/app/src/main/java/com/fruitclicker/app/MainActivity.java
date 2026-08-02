@@ -3,6 +3,7 @@ package com.fruitclicker.app;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -17,6 +18,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.LoadAdError;
 
 import com.fruitclicker.app.billing.BillingManager;
 
@@ -49,21 +51,6 @@ public class MainActivity extends Activity {
         );
         rootLayout.addView(webView, webParams);
 
-        MobileAds.initialize(this, initializationStatus -> {});
-
-        adView = new AdView(this);
-        adView.setAdSize(AdSize.BANNER);
-        adView.setAdUnitId(AD_UNIT_ID);
-
-        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        rootLayout.addView(adView, adParams);
-
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
-
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -93,8 +80,44 @@ public class MainActivity extends Activity {
             }
         }, "AndroidBilling");
 
-        webView.loadUrl("file:///android_asset/index.html");
+        adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId(AD_UNIT_ID);
+
+        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        rootLayout.addView(adView, adParams);
+
         setContentView(rootLayout);
+
+        try {
+            MobileAds.initialize(this, initializationStatus -> {
+                Log.d(TAG, "AdMob initialized: " + initializationStatus);
+                loadBannerAd();
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "AdMob initialization failed", e);
+            if (adView != null) {
+                adView.setVisibility(View.GONE);
+            }
+        }
+
+        webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void loadBannerAd() {
+        if (adView == null) {
+            return;
+        }
+        try {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load banner ad", e);
+            adView.setVisibility(View.GONE);
+        }
     }
 
     private void enableFullscreen() {
