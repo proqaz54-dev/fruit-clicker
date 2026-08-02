@@ -1856,3 +1856,25 @@ html, body {
 }
 
 /* ===== AD CONTAINERS ===== */
+.ad-container {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+#adTopBanner {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+#adBottomBanner {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
