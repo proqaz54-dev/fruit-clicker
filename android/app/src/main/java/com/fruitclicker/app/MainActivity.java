@@ -1,7 +1,12 @@
 package com.fruitclicker.app;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -26,6 +31,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        enableFullscreen();
 
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
@@ -66,6 +73,7 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        settings.setSupportZoom(false);
 
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
@@ -87,6 +95,31 @@ public class MainActivity extends Activity {
 
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(rootLayout);
+    }
+
+    private void enableFullscreen() {
+        WindowInsetsController controller;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            controller = getWindow().getInsetsController();
+            if (controller != null) {
+                controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+            );
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            );
+        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -112,6 +145,7 @@ public class MainActivity extends Activity {
         if (adView != null) {
             adView.resume();
         }
+        enableFullscreen();
     }
 
     @Override
