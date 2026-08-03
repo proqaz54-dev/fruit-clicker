@@ -7,7 +7,7 @@
     <application
         android:allowBackup="true"
         android:label="Fruit Clicker"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="true">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2369179575521282~4054146258"/>
