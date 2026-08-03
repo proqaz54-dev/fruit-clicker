@@ -59,7 +59,15 @@ jobs:
           echo "Copying web assets into Android project..."
           rm -rf android/app/src/main/assets
           mkdir -p android/app/src/main/assets
-          cp index.html android/app/src/main/assets/
+          python3 -c "
+          import re
+          with open('index.html', 'r') as f:
+              html = f.read()
+          html = re.sub(r'<!-- Top Banner Ad -->.*?</div>\\s*<script>.*?</script>\\s*', '', html, flags=re.DOTALL)
+          html = re.sub(r'<!-- Bottom Banner Ad -->.*?</div>\\s*<script>.*?</script>\\s*', '', html, flags=re.DOTALL)
+          with open('android/app/src/main/assets/index.html', 'w') as f:
+              f.write(html)
+          "
           cp styles.css android/app/src/main/assets/
           cp -r js android/app/src/main/assets/
           ls -la android/app/src/main/assets/
