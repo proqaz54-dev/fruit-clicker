@@ -19,13 +19,10 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
-import com.fruitclicker.app.billing.BillingManager;
-
 public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
     private WebView webView;
-    private BillingManager billingManager;
     private AdView adView;
     private static final String AD_UNIT_ID = "ca-app-pub-2369179575521282/3426927468";
 
@@ -103,21 +100,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        billingManager = new BillingManager(this, webView);
-
-        webView.addJavascriptInterface(new Object() {
-            @JavascriptInterface
-            public String purchase(String sku) {
-                billingManager.purchase(sku);
-                return "queued";
-            }
-
-            @JavascriptInterface
-            public String isAvailable() {
-                return billingManager.isAvailable();
-            }
-        }, "AndroidBilling");
-
         webView.loadUrl("file:///android_asset/index.html");
     }
 
@@ -184,10 +166,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (billingManager != null) {
-            billingManager.destroy();
-            billingManager = null;
-        }
         if (adView != null) {
             adView.destroy();
             adView = null;

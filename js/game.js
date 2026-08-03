@@ -26,15 +26,6 @@ const FRUITS = [
   { id: 'eternalfruit', name: 'Eternal Fruit', emoji: '♾️', baseCost: 1000000000000, baseIncome: 1000000000, cpc: 2000000, costMultiplier: 1.15, unlocked: false, minCost: 5000000000000, rarity: 'eternal', evolutionEmojis: ['♾️', '💎', '👑'] },
 ];
 
-// Exclusive fruits for real money
-const EXCLUSIVE_FRUITS = [
-  { id: 'goldenapple', name: 'Golden Apple', emoji: '🍏', price: 99, baseIncome: 10000, cpc: 1000, rarity: 'exclusive' },
-  { id: 'rainbowberry', name: 'Rainbow Berry', emoji: '🌈', price: 99, baseIncome: 25000, cpc: 2500, rarity: 'exclusive' },
-  { id: 'crystalpear', name: 'Crystal Pear', emoji: '💧', price: 99, baseIncome: 50000, cpc: 5000, rarity: 'exclusive' },
-  { id: 'phoenixfruit', name: 'Phoenix Fruit', emoji: '🦅', price: 99, baseIncome: 100000, cpc: 10000, rarity: 'exclusive' },
-  { id: 'autoclicker', name: 'Auto Clicker', emoji: '🤖', price: 99, baseIncome: 0, cpc: 0, rarity: 'exclusive', isAutoClicker: true },
-];
-
 // Upgrades system
 const UPGRADES = [
   { id: 'click_power', name: 'Click Power', emoji: '👆', maxLevel: 50, baseCost: 100, costMultiplier: 1.5, effect: (level) => level },
@@ -144,86 +135,6 @@ const AD_CONFIG = {
   bannerAdUnitId: 'ca-app-pub-2369179575521282/5666344897',
 };
 
-const PLAY_STORE_PRODUCTS = {
-  coins_pack_1: { id: 'coins_pack_1', type: 'coins', amount: 1000000, price: 199, currency: 'UAH' },
-  crystals_pack_1: { id: 'crystals_pack_1', type: 'crystals', amount: 1000, price: 199, currency: 'UAH' },
-  golden_apple: { id: 'golden_apple', type: 'exclusive', fruitId: 'goldenapple', price: 99, currency: 'UAH' },
-  rainbow_berry: { id: 'rainbow_berry', type: 'exclusive', fruitId: 'rainbowberry', price: 99, currency: 'UAH' },
-  crystal_pear: { id: 'crystal_pear', type: 'exclusive', fruitId: 'crystalpear', price: 99, currency: 'UAH' },
-  phoenix_fruit: { id: 'phoenix_fruit', type: 'exclusive', fruitId: 'phoenixfruit', price: 99, currency: 'UAH' },
-  autoclicker: { id: 'autoclicker', type: 'exclusive', fruitId: 'autoclicker', price: 99, currency: 'UAH' },
-};
-
-function getBillingBridge() {
-  try {
-    if (window.AndroidBilling && typeof window.AndroidBilling.purchase === 'function') {
-      return window.AndroidBilling;
-    }
-  } catch (e) {}
-  return null;
-}
-
-function buyPlayStoreProduct(productKey) {
-  const product = PLAY_STORE_PRODUCTS[productKey];
-  if (!product) {
-    showNotification('Unknown product: ' + productKey);
-    return Promise.resolve(false);
-  }
-
-  const bridge = getBillingBridge();
-  if (!bridge) {
-    const confirmed = confirm(
-      (product.type === 'coins' ? '🪙' : product.type === 'crystals' ? '💎' : '👑') +
-      ' ' + (product.type === 'exclusive' ? 'Buy ' + product.id.replace(/_/g, ' ') : product.type === 'coins' ? 'Buy Coins' : 'Buy Crystals') +
-      '\n\nPrice: ' + product.price + ' ' + (product.currency || 'UAH') +
-      '\n\nDemo mode: press OK to simulate purchase. Connect Google Play Billing for real purchases.'
-    );
-    if (!confirmed) return Promise.resolve(false);
-    return Promise.resolve({ demo: true, productKey });
-  }
-
-  return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(false), 30000);
-
-    window._billingResolve = (payload) => {
-      clearTimeout(timeout);
-      if (!payload) return resolve(false);
-      try {
-        const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
-        if (data.event === 'result' && data.code === 1) {
-          resolve({ demo: false, productKey, purchase: data });
-        } else if (data.event === 'result' && data.code === 2) {
-          showNotification('⏳ Purchase is pending...');
-          resolve(false);
-        } else if (data.event === 'result' && data.code === 0) {
-          showNotification('Purchase failed' + (data.message ? ': ' + data.message : ''));
-          resolve(false);
-        } else if (data.event === 'connected' && data.code !== 1) {
-          showNotification('Google Play Billing is not available');
-          resolve(false);
-        } else {
-          resolve(false);
-        }
-      } catch (e) {
-        resolve(false);
-      }
-    };
-
-    window.onBillingEvent = function(payload) {
-      if (window._billingResolve) {
-        window._billingResolve(payload);
-      }
-    };
-
-    try {
-      bridge.purchase(productKey);
-    } catch (e) {
-      clearTimeout(timeout);
-      resolve(false);
-    }
-  });
-}
-
 class Game {
   constructor() {
     this.coins = 0;
@@ -249,14 +160,6 @@ class Game {
     // Upgrades
     this.upgrades = {};
     UPGRADES.forEach(u => this.upgrades[u.id] = 0);
-
-    // Exclusive fruits owned
-    this.exclusiveFruits = [];
-    this.purchasedExclusiveIds = [];
-    
-    // Auto clicker
-    this.autoClickerActive = false;
-    this.autoClickerInterval = null;
 
     // Session time rewards
     this.sessionStartTime = Date.now();
@@ -368,13 +271,6 @@ class Game {
       income += this.getFruitIncome(fruit, i) * this.fruitCounts[i];
     });
     
-    // Add exclusive fruits income
-    this.exclusiveFruits.forEach((fruit, i) => {
-      const level = this.exclusiveLevels ? this.exclusiveLevels[i] : 1;
-      const boostMultiplier = UPGRADES.find(u => u.id === 'income_boost').effect(this.getUpgradeLevel('income_boost'));
-      income += fruit.baseIncome * level * boostMultiplier * this.prestigeMultiplier;
-    });
-    
     this.incomePerSecond = income;
   }
 
@@ -413,75 +309,20 @@ class Game {
     this.save();
   }
 
-  buyExclusiveFruit(exclusive) {
-    if (this.purchasedExclusiveIds.includes(exclusive.id)) return;
-    const productKey = Object.keys(PLAY_STORE_PRODUCTS).find(k => PLAY_STORE_PRODUCTS[k].fruitId === exclusive.id);
-    if (!productKey) {
-      this.showNotification('Billing product not configured: ' + exclusive.id);
-      return;
-    }
-
-    buyPlayStoreProduct(productKey).then(result => {
-      if (!result) return;
-      this.purchasedExclusiveIds.push(exclusive.id);
-      this.exclusiveFruits.push({ ...exclusive, level: 1 });
-      if (exclusive.isAutoClicker) {
-        this.activateAutoClicker();
-      }
-      this.recalculate();
-      this.renderGarden();
-      this.updateUI();
-      this.showNotification(exclusive.emoji + ' ' + exclusive.name + ' purchased' + (result && result.demo ? ' (demo)' : '') + '!');
-      this.save();
-    }).catch(() => {});
-  }
-
-  activateAutoClicker() {
-    if (this.autoClickerActive) return;
-    this.autoClickerActive = true;
+  upgradeFruit(index) {
+    const fruit = FRUITS[index];
+    const level = this.fruitLevels[index];
+    if (this.fruitCounts[index] === 0) return;
+    const cost = Math.floor(1000 * Math.pow(1.5, level));
+    if (this.coins < cost) return;
     
-    this.autoClickerInterval = setInterval(() => {
-      // Simulate clicks
-      for (let i = 0; i < 10; i++) {
-        this.coins += this.clickPower;
-        this.totalCoins += this.clickPower;
-      }
-      this.updateUI();
-    }, 1000);
-    
-    this.showNotification('🤖 Auto Clicker activated!');
-  }
-
-  deactivateAutoClicker() {
-    this.autoClickerActive = false;
-    if (this.autoClickerInterval) {
-      clearInterval(this.autoClickerInterval);
-      this.autoClickerInterval = null;
-    }
-  }
-
-  buyCoins() {
-    const product = PLAY_STORE_PRODUCTS['coins_pack_1'];
-    buyPlayStoreProduct('coins_pack_1').then(result => {
-      if (!result) return;
-      this.coins += product.amount;
-      this.totalCoins += product.amount;
-      this.updateUI();
-      this.showNotification('🪙 +' + this.formatNumber(product.amount) + ' coins received' + (result && result.demo ? ' (demo)' : '') + '!');
-      this.save();
-    }).catch(() => {});
-  }
-
-  buyCrystals() {
-    const product = PLAY_STORE_PRODUCTS['crystals_pack_1'];
-    buyPlayStoreProduct('crystals_pack_1').then(result => {
-      if (!result) return;
-      this.crystals += product.amount;
-      this.totalCrystals += product.amount;
-      this.updateUI();
-      this.showNotification('💎 +' + product.amount + ' crystals received' + (result && result.demo ? ' (demo)' : '') + '!');
-      this.save();
-    }).catch(() => {});
+    this.coins -= cost;
+    this.fruitLevels[index]++;
+    this.recalculate();
+    this.renderGarden();
+    this.updateUI();
+    this.showNotification(fruit.emoji + ' ' + fruit.name + ' upgraded to level ' + this.fruitLevels[index] + '!');
+    this.save();
   }
 
   clickFruit(e) {
@@ -582,23 +423,14 @@ class Game {
       shopHtml += '<div class="shop-header"><h3>🌍 Global Stock</h3><span class="shop-timer" id="shopTimer">05:00</span></div>';
       shopHtml += '<p class="shop-desc">Refreshes globally every 5 minutes with random seeds & rare items!</p>';
 
-      if (this.shopStock.length === 0) {
-        shopHtml += '<div class="shop-empty"><span>📭</span>No rare items in stock this cycle.<br>Check back in 5 minutes!</div>';
-      } else {
-        shopHtml += '<div class="shop-list" id="gardenShopList"></div>';
-      }
+       if (this.shopStock.length === 0) {
+         shopHtml += '<div class="shop-empty"><span>📭</span>No rare items in stock this cycle.<br>Check back in 5 minutes!</div>';
+       } else {
+         shopHtml += '<div class="shop-list" id="gardenShopList"></div>';
+       }
 
-      // === PURCHASES SECTION ===
-      shopHtml += '<h3 class="shop-section-title">💳 Purchases (Real Money)</h3>';
-      shopHtml += '<div class="shop-list" id="gardenPurchasesList"></div>';
-
-      // === EXCLUSIVE FRUITS SECTION ===
-      shopHtml += '<h3 class="shop-section-title">👑 Exclusive Items</h3>';
-      shopHtml += '<p class="exclusive-desc">Can only be purchased with real money!</p>';
-      shopHtml += '<div class="shop-list" id="gardenExclusiveList"></div>';
-
-       shopHtml += '</div>';
-       shopContainer.innerHTML = shopHtml;
+        shopHtml += '</div>';
+        shopContainer.innerHTML = shopHtml;
 
        // Render Shop Stock Items
       const stockList = document.getElementById('gardenShopList');
@@ -635,70 +467,7 @@ class Game {
         });
       }
 
-      // Render Purchases
-      const purchasesList = document.getElementById('gardenPurchasesList');
-      if (purchasesList) {
-        const coinsCard = document.createElement('div');
-        coinsCard.className = 'purchase-item';
-        coinsCard.innerHTML = `
-          <div class="purchase-emoji">🪙</div>
-          <div class="purchase-info">
-            <div class="purchase-name">Coins Pack</div>
-            <div class="purchase-amount">1,000,000 coins</div>
-          </div>
-          <button class="purchase-btn" id="buyCoinsBtn">199 грн</button>
-        `;
-        purchasesList.appendChild(coinsCard);
-        coinsCard.querySelector('#buyCoinsBtn').addEventListener('click', () => this.buyCoins());
-
-        const crystalsCard = document.createElement('div');
-        crystalsCard.className = 'purchase-item';
-        crystalsCard.innerHTML = `
-          <div class="purchase-emoji">💎</div>
-          <div class="purchase-info">
-            <div class="purchase-name">Crystals Pack</div>
-            <div class="purchase-amount">1,000 crystals</div>
-          </div>
-          <button class="purchase-btn" id="buyCrystalsBtn">199 грн</button>
-        `;
-        purchasesList.appendChild(crystalsCard);
-        crystalsCard.querySelector('#buyCrystalsBtn').addEventListener('click', () => this.buyCrystals());
-      }
-
-      // Render Exclusive Items
-      const exclusiveList = document.getElementById('gardenExclusiveList');
-      if (exclusiveList) {
-        EXCLUSIVE_FRUITS.forEach(exclusive => {
-          const owned = this.purchasedExclusiveIds.includes(exclusive.id);
-          const card = document.createElement('div');
-          card.className = 'exclusive-item' + (owned ? ' owned' : '') + (exclusive.isAutoClicker ? ' auto-clicker' : '');
-
-          let itemDesc = '';
-          if (exclusive.isAutoClicker) {
-            itemDesc = '🤖 +10 clicks/sec';
-          } else {
-            itemDesc = '+' + this.formatNumber(exclusive.baseIncome) + '/sec';
-          }
-
-          card.innerHTML = `
-            <div class="exclusive-emoji">${exclusive.emoji}</div>
-            <div class="exclusive-info">
-              <div class="exclusive-name">${exclusive.name}</div>
-              <div class="exclusive-income">${itemDesc}</div>
-            </div>
-            ${owned ? '<span class="owned-label">✅ Owned</span>' : '<button class="exclusive-btn" data-exclusive="' + exclusive.id + '">' + exclusive.price + ' грн</button>'}
-          `;
-
-          if (!owned) {
-            const btn = card.querySelector('.exclusive-btn');
-            btn.addEventListener('click', () => this.buyExclusiveFruit(exclusive));
-          }
-
-          exclusiveList.appendChild(card);
-        });
-      }
-
-       this.updateShopTimer();
+        this.updateShopTimer();
      }
 
     const list = document.getElementById('fruitsList');
@@ -832,7 +601,7 @@ class Game {
 
     const ownedFruits = FRUITS.filter((fruit, i) => this.fruitCounts[i] > 0);
     
-    if (ownedFruits.length === 0 && this.exclusiveFruits.length === 0) {
+    if (ownedFruits.length === 0) {
       container.innerHTML = '<div class="empty-inventory">Buy fruits to see them in your inventory!</div>';
       return;
     }
@@ -862,24 +631,7 @@ class Game {
       container.appendChild(card);
     });
 
-    this.exclusiveFruits.forEach((fruit, i) => {
-      const level = this.exclusiveFruits[i].level || 1;
-      const card = document.createElement('div');
-      card.className = 'inventory-item exclusive';
-      card.innerHTML = `
-        <div class="inventory-emoji">${fruit.emoji}</div>
-        <div class="inventory-info">
-          <div class="inventory-name">${fruit.name}</div>
-          <div class="inventory-details">
-            <span class="inv-count">x1</span>
-            <span class="inv-level">⭐${level}</span>
-          </div>
-          <div class="inventory-income">+${this.formatNumber(fruit.baseIncome * level)}/сек</div>
-        </div>
-        <span class="fruit-rarity-tag exclusive">EXCLUSIVE</span>
-      `;
-      container.appendChild(card);
-    });
+    // Exclusive fruits removed
   }
 
   // ===== UPGRADES =====
@@ -1466,9 +1218,6 @@ class Game {
       claimedTimeRewards: this.claimedTimeRewards,
       sessionStartTime: this.sessionStartTime,
       upgrades: this.upgrades,
-      exclusiveFruits: this.exclusiveFruits,
-      purchasedExclusiveIds: this.purchasedExclusiveIds,
-      autoClickerActive: this.autoClickerActive,
       lastStockSeed: this.lastStockSeed,
       shopStock: this.shopStock,
       shopBought: Array.from(this.shopBought),
@@ -1534,19 +1283,6 @@ class Game {
         });
       }
       
-      // Load exclusive fruits
-      if (data.exclusiveFruits) {
-        this.exclusiveFruits = data.exclusiveFruits;
-      }
-      if (data.purchasedExclusiveIds) {
-        this.purchasedExclusiveIds = data.purchasedExclusiveIds;
-      }
-      
-      // Load auto clicker state
-      if (data.autoClickerActive && !this.autoClickerActive) {
-        this.activateAutoClicker();
-      }
-
       if (data.lastSave) {
         const elapsedSec = Math.min((Date.now() - data.lastSave) / 1000, 86400);
         if (elapsedSec > 0 && this.incomePerSecond > 0) {
@@ -1589,9 +1325,6 @@ class Game {
     
     this.upgrades = {};
     UPGRADES.forEach(u => this.upgrades[u.id] = 0);
-    this.exclusiveFruits = [];
-    this.purchasedExclusiveIds = [];
-    this.autoClickerActive = false;
     this.shopBought = new Set();
     this.lastExitTime = null;
     

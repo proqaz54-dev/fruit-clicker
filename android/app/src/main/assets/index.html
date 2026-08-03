@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Fruit Clicker - Auto Clicker Game</title>
   <meta name="description" content="Click fruits, earn coins, buy upgrades and auto clicker!">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-2369179575521282" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -36,6 +37,19 @@
       </div>
     </header>
 
+    <!-- Top Banner Ad -->
+    <div class="ad-container" id="adTopBanner">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-app-pub-2369179575521282"
+           data-ad-slot="5666344897"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
     <main id="main">
       <div class="click-area" id="clickArea">
         <div class="click-fruit-wrapper" id="clickFruitWrapper">
@@ -55,6 +69,19 @@
         <div class="fruits-list" id="fruitsList"></div>
       </section>
     </main>
+
+    <!-- Bottom Banner Ad -->
+    <div class="ad-container" id="adBottomBanner">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-app-pub-2369179575521282"
+           data-ad-slot="5666344897"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
 
     <footer id="footer">
       <div class="footer-btn active" data-tab="garden">
@@ -149,6 +176,20 @@
 
   <div class="notification" id="notification"></div>
   <div class="shop-refresh-notification" id="shopRefreshNotif">🏪 Stock refreshed!</div>
+
+  <!-- Case opening overlay -->
+  <div class="case-opening-overlay" id="caseOpeningOverlay" style="display:none;">
+    <div class="case-opening-content" id="caseOpeningContent">
+      <div class="case-opening-emoji" id="caseOpeningEmoji"></div>
+      <div class="case-opening-title" id="caseOpeningTitle"></div>
+      <div class="roulette-container" id="rouletteContainer">
+        <div class="roulette-strip" id="rouletteStrip"></div>
+        <div class="roulette-highlight"></div>
+      </div>
+      <div class="case-opening-reward" id="caseOpeningReward" style="display:none;"></div>
+      <button class="case-opening-btn" id="caseOpeningBtn" style="display:none;">Claim!</button>
+    </div>
+  </div>
 
   <script src="js/game.js"></script>
 </body>
