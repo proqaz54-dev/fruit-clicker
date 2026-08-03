@@ -1,9 +1,11 @@
 package com.fruitclicker.app;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -17,6 +19,9 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.initialization.InitializationStatus;
 
 public class MainActivity extends Activity {
 
@@ -45,14 +50,8 @@ public class MainActivity extends Activity {
         rootLayout.addView(webView, webParams);
 
         adView = new AdView(this);
-        adView.setAdSize(AdSize.BANNER);
         adView.setAdUnitId(AD_UNIT_ID);
-
-        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        rootLayout.addView(adView, adParams);
+        rootLayout.addView(adView, adView.getLayoutParams());
 
         setContentView(rootLayout);
         enableFullscreen();
@@ -78,7 +77,7 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 try {
                     MobileAds.initialize(MainActivity.this, initializationStatus -> {
-                        Log.d(TAG, "AdMob initialized");
+                        Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
                         loadBannerAd();
                     });
                 } catch (Exception e) {
@@ -102,12 +101,53 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
+    private AdSize getAdaptiveAdSize() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, width);
+    }
+
     private void loadBannerAd() {
         if (adView == null) {
             return;
         }
         try {
-            AdRequest adRequest = new AdRequest.Builder().build();
+            AdSize adSize = getAdaptiveAdSize();
+            adView.setAdSize(adSize);
+            LinearLayout.LayoutParams adParams = (LinearLayout.LayoutParams) adView.getLayoutParams();
+            if (adParams != null) {
+                adParams.width = LinearLayout.LayoutParams.MATCH_PARENT;
+                adParams.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                adView.setLayoutParams(adParams);
+            }
+
+            AdRequest.Builder builder = new AdRequest.Builder();
+            AdRequest adRequest = builder.build();
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    Log.d(TAG, "Banner ad loaded successfully");
+                    adView.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAdFailedToLoad(AdError adError) {
+                    Log.e(TAG, "Banner ad failed to load: " + adError.getMessage() + " (code: " + adError.getCode() + ")");
+                    adView.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAdOpened() {
+                    Log.d(TAG, "Banner ad opened");
+                }
+
+                @Override
+                public void onAdClosed() {
+                    Log.d(TAG, "Banner ad closed");
+                }
+            });
             adView.loadAd(adRequest);
         } catch (Exception e) {
             Log.e(TAG, "Failed to load banner ad", e);
