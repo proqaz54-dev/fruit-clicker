@@ -33,8 +33,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        enableFullscreen();
-
         LinearLayout rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
         rootLayout.setLayoutParams(new LinearLayout.LayoutParams(
@@ -61,6 +59,7 @@ public class MainActivity extends Activity {
         rootLayout.addView(adView, adParams);
 
         setContentView(rootLayout);
+        enableFullscreen();
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
