@@ -77,6 +77,14 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                view.evaluateJavascript(
+                        "(function() {" +
+                        "  var style = document.createElement('style');" +
+                        "  style.innerHTML = '.ad-container { display: none !important; }';" +
+                        "  document.head.appendChild(style);" +
+                        "})()",
+                        null
+                );
                 try {
                     MobileAds.initialize(MainActivity.this, initializationStatus -> {
                         Log.d(TAG, "AdMob initialized");
