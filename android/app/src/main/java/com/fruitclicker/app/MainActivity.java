@@ -19,8 +19,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 
 public class MainActivity extends Activity {
@@ -125,8 +125,8 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void onAdFailedToLoad(AdError adError) {
-                    Log.e(TAG, "Banner ad failed to load: " + adError.getMessage() + " (code: " + adError.getCode() + ")");
+                public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    Log.e(TAG, "Banner ad failed to load: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     adView.setVisibility(View.GONE);
                 }
 
