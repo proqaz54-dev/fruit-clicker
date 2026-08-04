@@ -1096,10 +1096,29 @@ class Game {
                            reward.type === 'crystals' ? '💎 ' + reward.amount :
                            reward.emoji;
 
+      let label = '';
+      if (isClaimed) {
+        label = 'Claimed';
+      } else if (isToday) {
+        label = 'TODAY!';
+      } else if (isPast) {
+        label = 'Done';
+      } else {
+        let daysUntil;
+        if (reward.day > currentDay) {
+          daysUntil = reward.day - currentDay;
+        } else {
+          daysUntil = (7 - currentDay) + reward.day;
+        }
+        const totalHours = daysUntil * 24;
+        const h = Math.floor(totalHours);
+        label = 'In ' + h + 'h';
+      }
+
       card.innerHTML = `
         <div class="daily-day">Day ${reward.day}</div>
         <div class="daily-icon">${isClaimed || isPast ? '✅' : rewardDisplay}</div>
-        <div class="daily-label">${isClaimed ? 'Claimed' : isToday ? 'TODAY!' : isPast ? 'Done' : 'Locked'}</div>
+        <div class="daily-label">${label}</div>
       `;
 
       if (isToday && !isClaimed) {
