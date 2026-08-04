@@ -587,7 +587,6 @@ class Game {
     if (tab === 'cases') document.getElementById('tabCases').style.display = 'block';
     if (tab === 'rewards') {
       document.getElementById('tabRewards').style.display = 'block';
-      this.updateDailyTimer();
     }
     if (tab === 'inventory') document.getElementById('tabInventory').style.display = 'block';
     if (tab === 'upgrades') document.getElementById('tabUpgrades').style.display = 'block';
@@ -1083,10 +1082,11 @@ class Game {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     const currentDay = ((this.loginStreak - 1) % 7) + 1;
+    const todayClaimed = this.claimedDailyRewardDays.has(currentDay);
 
     DAILY_REWARDS.forEach((reward, i) => {
       const isClaimed = this.claimedDailyRewardDays.has(reward.day);
-      const isToday = reward.day === currentDay && !isClaimed;
+      const isToday = reward.day === currentDay;
       const isPast = reward.day < currentDay;
 
       const card = document.createElement('div');
@@ -1097,12 +1097,19 @@ class Game {
                            reward.emoji;
 
       let label = '';
+      let icon = rewardDisplay;
+
       if (isClaimed) {
         label = 'Claimed';
-      } else if (isToday) {
+        icon = '✅';
+      } else if (isToday && !todayClaimed) {
         label = 'TODAY!';
+      } else if (isToday && todayClaimed) {
+        label = 'In 24h';
+        icon = '⏳';
       } else if (isPast) {
         label = 'Done';
+        icon = '✅';
       } else {
         let daysUntil;
         if (reward.day > currentDay) {
@@ -1111,13 +1118,12 @@ class Game {
           daysUntil = (7 - currentDay) + reward.day;
         }
         const totalHours = daysUntil * 24;
-        const h = Math.floor(totalHours);
-        label = 'In ' + h + 'h';
+        label = 'In ' + totalHours + 'h';
       }
 
       card.innerHTML = `
         <div class="daily-day">Day ${reward.day}</div>
-        <div class="daily-icon">${isClaimed || isPast ? '✅' : rewardDisplay}</div>
+        <div class="daily-icon">${icon}</div>
         <div class="daily-label">${label}</div>
       `;
 
@@ -1128,11 +1134,6 @@ class Game {
 
       container.appendChild(card);
     });
-
-    const timerEl = document.getElementById('dailyTimer');
-    if (timerEl) {
-      timerEl.textContent = 'Next reward in: ' + hours + 'h ' + minutes + 'm';
-    }
 
     const streakEl = document.getElementById('streakDisplay');
     if (streakEl) {
@@ -1488,11 +1489,6 @@ class Game {
       this.checkTimeRewards();
     }, 60000);
 
-    // Daily reward timer update every minute
-    this._dailyTimerInterval = setInterval(() => {
-      this.updateDailyTimer();
-    }, 60000);
-
     this.saveInterval = setInterval(() => this.save(), 10000);
 
     setTimeout(() => {
@@ -1510,18 +1506,6 @@ class Game {
     const secs = Math.floor((remaining % 60000) / 1000);
     el.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
     el.classList.toggle('urgent', remaining < 30000);
-  }
-
-  updateDailyTimer() {
-    const timerEl = document.getElementById('dailyTimer');
-    if (!timerEl) return;
-    const now = new Date();
-    const nextMidnight = new Date(now);
-    nextMidnight.setHours(24, 0, 0, 0);
-    const diff = nextMidnight - now;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    timerEl.textContent = 'Next reward in: ' + hours + 'h ' + minutes + 'm';
   }
 
    setupEventListeners() {
