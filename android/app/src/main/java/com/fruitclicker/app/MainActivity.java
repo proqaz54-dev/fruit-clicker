@@ -22,22 +22,13 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.UnityAdsInitializationListener;
-import com.unity3d.services.banners.UnityBannerSize;
-import com.unity3d.services.banners.view.BannerView;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
     private WebView webView;
     private AdView adView;
-    private BannerView unityBannerView;
-    private LinearLayout rootLayout;
     private static final String AD_UNIT_ID = "ca-app-pub-2369179575521282/3426927468";
-    private static final String ADMOB_ENABLED = "true";
-    private static final String UNITY_GAME_ID = "";
-    private static final String UNITY_BANNER_PLACEMENT = "banner";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,43 +88,13 @@ public class MainActivity extends Activity {
     }
 
     private void initAds() {
-        if ("true".equalsIgnoreCase(ADMOB_ENABLED)) {
-            try {
-                MobileAds.initialize(MainActivity.this, initializationStatus -> {
-                    Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
-                    loadAdMobBanner();
-                });
-            } catch (Exception e) {
-                Log.e(TAG, "AdMob initialization failed", e);
-                if (adView != null) {
-                    adView.setVisibility(View.GONE);
-                }
-            }
-        } else if (!UNITY_GAME_ID.isEmpty()) {
-            try {
-                UnityAds.initialize(this, UNITY_GAME_ID, false, new UnityAdsInitializationListener() {
-                    @Override
-                    public void onInitializationComplete() {
-                        Log.d(TAG, "Unity Ads initialized");
-                        loadUnityBanner();
-                    }
-
-                    @Override
-                    public void onInitializationFailed(com.unity3d.ads.UnityAds.UnityAdsInitializationError error, String message) {
-                        Log.e(TAG, "Unity Ads initialization failed: " + message);
-                        if (adView != null) {
-                            adView.setVisibility(View.GONE);
-                        }
-                    }
-                });
-            } catch (Exception e) {
-                Log.e(TAG, "Unity Ads initialization failed", e);
-                if (adView != null) {
-                    adView.setVisibility(View.GONE);
-                }
-            }
-        } else {
-            Log.d(TAG, "No ad network enabled");
+        try {
+            MobileAds.initialize(MainActivity.this, initializationStatus -> {
+                Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
+                loadAdMobBanner();
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "AdMob initialization failed", e);
             if (adView != null) {
                 adView.setVisibility(View.GONE);
             }
@@ -173,27 +134,6 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             Log.e(TAG, "Failed to load AdMob banner", e);
             adView.setVisibility(View.GONE);
-        }
-    }
-
-    private void loadUnityBanner() {
-        try {
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            int width = Math.min(size.x, 728);
-            int height = (int) (width * 0.15f);
-            UnityBannerSize bannerSize = new UnityBannerSize(width, Math.max(height, 50));
-
-            unityBannerView = new BannerView(this, UNITY_BANNER_PLACEMENT, bannerSize);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            rootLayout.addView(unityBannerView, params);
-            unityBannerView.load();
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to load Unity banner", e);
         }
     }
 
@@ -250,10 +190,6 @@ public class MainActivity extends Activity {
         if (adView != null) {
             adView.destroy();
             adView = null;
-        }
-        if (unityBannerView != null) {
-            unityBannerView.destroy();
-            unityBannerView = null;
         }
         if (webView != null) {
             webView.destroy();
