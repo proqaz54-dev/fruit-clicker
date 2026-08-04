@@ -22,6 +22,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.RequestConfiguration;
 
 public class MainActivity extends Activity {
 
@@ -90,6 +91,10 @@ public class MainActivity extends Activity {
 
     private void initAds() {
         try {
+            RequestConfiguration configuration = new RequestConfiguration.Builder()
+                .setTestDeviceIds("YOUR_TEST_DEVICE_ID")
+                .build();
+            MobileAds.setRequestConfiguration(configuration);
             MobileAds.initialize(MainActivity.this, initializationStatus -> {
                 Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
                 loadAdMobBanner();
@@ -101,6 +106,12 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+    // To enable test ads:
+    // 1. Run the app on your device
+    // 2. Check logcat for "Use RequestConfiguration.Builder.setTestDeviceIds"
+    // 3. Copy the device ID shown in the log
+    // 4. Replace "YOUR_TEST_DEVICE_ID" with the actual device ID
 
     private void loadAdMobBanner() {
         if (adView == null) return;
