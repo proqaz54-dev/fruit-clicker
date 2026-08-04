@@ -51,7 +51,12 @@ public class MainActivity extends Activity {
 
         adView = new AdView(this);
         adView.setAdUnitId(AD_UNIT_ID);
-        rootLayout.addView(adView, adView.getLayoutParams());
+
+        LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        rootLayout.addView(adView, adParams);
 
         setContentView(rootLayout);
         enableFullscreen();
