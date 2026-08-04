@@ -114,8 +114,10 @@ public class MainActivity extends Activity {
             @JavascriptInterface
             public String getLogs() {
                 StringBuilder sb = new StringBuilder();
-                for (String log : logBuffer) {
-                    sb.append(log).append("\n");
+                synchronized (logBuffer) {
+                    for (String log : logBuffer) {
+                        sb.append(log).append("\n");
+                    }
                 }
                 return sb.toString();
             }
