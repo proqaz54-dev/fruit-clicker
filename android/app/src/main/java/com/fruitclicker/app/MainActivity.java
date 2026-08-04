@@ -22,19 +22,28 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.unity3d.ads.UnityAds;
+import com.unity3d.ads.UnityAdsInitializationListener;
+import com.unity3d.services.banners.UnityBannerSize;
+import com.unity3d.services.banners.view.BannerView;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
     private WebView webView;
     private AdView adView;
+    private BannerView unityBannerView;
+    private LinearLayout rootLayout;
     private static final String AD_UNIT_ID = "ca-app-pub-2369179575521282/3426927468";
+    private static final String ADMOB_ENABLED = "true";
+    private static final String UNITY_GAME_ID = "";
+    private static final String UNITY_BANNER_PLACEMENT = "banner";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LinearLayout rootLayout = new LinearLayout(this);
+        rootLayout = new LinearLayout(this);
         rootLayout.setOrientation(LinearLayout.VERTICAL);
         rootLayout.setLayoutParams(new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -51,7 +60,6 @@ public class MainActivity extends Activity {
 
         adView = new AdView(this);
         adView.setAdUnitId(AD_UNIT_ID);
-
         LinearLayout.LayoutParams adParams = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -80,17 +88,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                try {
-                    MobileAds.initialize(MainActivity.this, initializationStatus -> {
-                        Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
-                        loadBannerAd();
-                    });
-                } catch (Exception e) {
-                    Log.e(TAG, "AdMob initialization failed", e);
-                    if (adView != null) {
-                        adView.setVisibility(View.GONE);
-                    }
-                }
+                initAds();
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -98,20 +96,57 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    private AdSize getAdaptiveAdSize() {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, width);
+    private void initAds() {
+        if ("true".equalsIgnoreCase(ADMOB_ENABLED)) {
+            try {
+                MobileAds.initialize(MainActivity.this, initializationStatus -> {
+                    Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
+                    loadAdMobBanner();
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "AdMob initialization failed", e);
+                if (adView != null) {
+                    adView.setVisibility(View.GONE);
+                }
+            }
+        } else if (!UNITY_GAME_ID.isEmpty()) {
+            try {
+                UnityAds.initialize(this, UNITY_GAME_ID, false, new UnityAdsInitializationListener() {
+                    @Override
+                    public void onInitializationComplete() {
+                        Log.d(TAG, "Unity Ads initialized");
+                        loadUnityBanner();
+                    }
+
+                    @Override
+                    public void onInitializationFailed(com.unity3d.ads.UnityAds.UnityAdsInitializationError error, String message) {
+                        Log.e(TAG, "Unity Ads initialization failed: " + message);
+                        if (adView != null) {
+                            adView.setVisibility(View.GONE);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Unity Ads initialization failed", e);
+                if (adView != null) {
+                    adView.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            Log.d(TAG, "No ad network enabled");
+            if (adView != null) {
+                adView.setVisibility(View.GONE);
+            }
+        }
     }
 
-    private void loadBannerAd() {
-        if (adView == null) {
-            return;
-        }
+    private void loadAdMobBanner() {
+        if (adView == null) return;
         try {
-            AdSize adSize = getAdaptiveAdSize();
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, size.x);
             adView.setAdSize(adSize);
             LinearLayout.LayoutParams adParams = (LinearLayout.LayoutParams) adView.getLayoutParams();
             if (adParams != null) {
@@ -120,35 +155,45 @@ public class MainActivity extends Activity {
                 adView.setLayoutParams(adParams);
             }
 
-            AdRequest.Builder builder = new AdRequest.Builder();
-            AdRequest adRequest = builder.build();
+            AdRequest adRequest = new AdRequest.Builder().build();
             adView.setAdListener(new AdListener() {
                 @Override
                 public void onAdLoaded() {
-                    Log.d(TAG, "Banner ad loaded successfully");
+                    Log.d(TAG, "AdMob banner loaded");
                     adView.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    Log.e(TAG, "Banner ad failed to load: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    Log.e(TAG, "AdMob banner failed: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     adView.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onAdOpened() {
-                    Log.d(TAG, "Banner ad opened");
-                }
-
-                @Override
-                public void onAdClosed() {
-                    Log.d(TAG, "Banner ad closed");
                 }
             });
             adView.loadAd(adRequest);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to load banner ad", e);
+            Log.e(TAG, "Failed to load AdMob banner", e);
             adView.setVisibility(View.GONE);
+        }
+    }
+
+    private void loadUnityBanner() {
+        try {
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = Math.min(size.x, 728);
+            int height = (int) (width * 0.15f);
+            UnityBannerSize bannerSize = new UnityBannerSize(width, Math.max(height, 50));
+
+            unityBannerView = new BannerView(this, UNITY_BANNER_PLACEMENT, bannerSize);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            rootLayout.addView(unityBannerView, params);
+            unityBannerView.load();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load Unity banner", e);
         }
     }
 
@@ -205,6 +250,10 @@ public class MainActivity extends Activity {
         if (adView != null) {
             adView.destroy();
             adView = null;
+        }
+        if (unityBannerView != null) {
+            unityBannerView.destroy();
+            unityBannerView = null;
         }
         if (webView != null) {
             webView.destroy();
