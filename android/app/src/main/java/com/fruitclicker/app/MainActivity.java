@@ -21,6 +21,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.RequestConfiguration;
 
@@ -29,8 +31,10 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private WebView webView;
     private AdView adView;
+    private InterstitialAd interstitialAd;
     private LinearLayout rootLayout;
-    private static final String AD_UNIT_ID = "ca-app-pub-2369179575521282/3426927468";
+    private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/8761150204";
+    private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-5166043026354710/6350609288";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +102,7 @@ public class MainActivity extends Activity {
             MobileAds.initialize(MainActivity.this, initializationStatus -> {
                 Log.d(TAG, "AdMob initialized: " + initializationStatus.toString());
                 loadAdMobBanner();
+                loadInterstitialAd();
             });
         } catch (Exception e) {
             Log.e(TAG, "AdMob initialization failed", e);
@@ -146,6 +151,42 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             Log.e(TAG, "Failed to load AdMob banner", e);
             adView.setVisibility(View.GONE);
+        }
+    }
+
+    private void loadInterstitialAd() {
+        if (INTERSTITIAL_AD_UNIT_ID.isEmpty()) return;
+        try {
+            AdRequest adRequest = new AdRequest.Builder().build();
+            InterstitialAd.load(this, INTERSTITIAL_AD_UNIT_ID, adRequest, new InterstitialAdLoadCallback() {
+                @Override
+                public void onAdLoaded(com.google.android.gms.ads.interstitial.InterstitialAd interstitial) {
+                    Log.d(TAG, "Interstitial ad loaded");
+                    interstitialAd = interstitial;
+                }
+
+                @Override
+                public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    Log.e(TAG, "Interstitial ad failed: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    interstitialAd = null;
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load interstitial ad", e);
+        }
+    }
+
+    private void showInterstitialAd() {
+        if (interstitialAd == null) {
+            Log.d(TAG, "Interstitial ad not ready");
+            return;
+        }
+        try {
+            interstitialAd.show(this);
+            interstitialAd = null;
+            loadInterstitialAd();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show interstitial ad", e);
         }
     }
 
