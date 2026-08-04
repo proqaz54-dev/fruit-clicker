@@ -29,8 +29,6 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.RequestConfiguration;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -40,7 +38,6 @@ public class MainActivity extends Activity {
     private InterstitialAd interstitialAd;
     private RewardedAd rewardedAd;
     private LinearLayout rootLayout;
-    private final List<String> logBuffer = new ArrayList<>();
     private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/8848900250";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-5166043026354710/6350609288";
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-5166043026354710/6750330460";
@@ -110,56 +107,34 @@ public class MainActivity extends Activity {
             public void showRewarded() {
                 runOnUiThread(MainActivity.this::showRewardedAd);
             }
-
-            @JavascriptInterface
-            public String getLogs() {
-                StringBuilder sb = new StringBuilder();
-                synchronized (logBuffer) {
-                    for (String log : logBuffer) {
-                        sb.append(log).append("\n");
-                    }
-                }
-                return sb.toString();
-            }
         }, "AndroidAds");
 
         webView.loadUrl("file:///android_asset/index.html");
     }
 
     private void initAds() {
-        addLog("ADMOB INIT START");
+        Log.i(TAG, "ADMOB INIT START");
         try {
             RequestConfiguration configuration = new RequestConfiguration.Builder()
                 .setTestDeviceIds(java.util.Collections.emptyList())
                 .build();
             MobileAds.setRequestConfiguration(configuration);
-            addLog("RequestConfiguration set");
+            Log.i(TAG, "RequestConfiguration set");
             MobileAds.initialize(MainActivity.this, initializationStatus -> {
                 try {
-                    addLog("AdMob initialized: " + initializationStatus.toString());
-                    addLog("Adapter statuses: " + initializationStatus.getAdapterStatusMap().toString());
+                    Log.i(TAG, "AdMob initialized: " + initializationStatus.toString());
+                    Log.i(TAG, "Adapter statuses: " + initializationStatus.getAdapterStatusMap().toString());
                     loadAdMobBanner();
                     loadInterstitialAd();
                     loadRewardedAd();
                 } catch (Exception e) {
-                    addLog("Error in AdMob init callback: " + Log.getStackTraceString(e));
+                    Log.e(TAG, "Error in AdMob init callback", e);
                 }
             });
         } catch (Exception e) {
-            addLog("AdMob initialization failed: " + Log.getStackTraceString(e));
+            Log.e(TAG, "AdMob initialization failed", e);
         }
-        addLog("ADMOB INIT END");
-    }
-
-    private void addLog(String message) {
-        String log = "[" + android.text.format.DateFormat.format("HH:mm:ss", new java.util.Date()) + "] " + message;
-        Log.i(TAG, log);
-        runOnUiThread(() -> {
-            logBuffer.add(log);
-            if (logBuffer.size() > 200) {
-                logBuffer.remove(0);
-            }
-        });
+        Log.i(TAG, "ADMOB INIT END");
     }
 
     private void loadAdMobBanner() {
@@ -182,25 +157,25 @@ public class MainActivity extends Activity {
             adView.setAdListener(new AdListener() {
                 @Override
                 public void onAdLoaded() {
-                    addLog("Banner ad LOADED successfully");
+                    Log.i(TAG, "Banner ad LOADED successfully");
                     adView.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    addLog("Banner ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    Log.e(TAG, "Banner ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     adView.setVisibility(View.VISIBLE);
                     adView.setBackgroundColor(0xFF000000);
                 }
 
                 @Override
                 public void onAdOpened() {
-                    addLog("Banner ad OPENED");
+                    Log.i(TAG, "Banner ad OPENED");
                 }
 
                 @Override
                 public void onAdClosed() {
-                    addLog("Banner ad CLOSED");
+                    Log.i(TAG, "Banner ad CLOSED");
                 }
             });
             adView.loadAd(adRequest);
@@ -223,28 +198,28 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    addLog("Interstitial ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    Log.e(TAG, "Interstitial ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     interstitialAd = null;
                 }
             });
         } catch (Exception e) {
-            addLog("Failed to load interstitial ad: " + Log.getStackTraceString(e));
+            Log.e(TAG, "Failed to load interstitial ad", e);
         }
     }
 
     private void showInterstitialAd() {
         if (interstitialAd == null) {
-            addLog("Interstitial ad not ready (null)");
+            Log.d(TAG, "Interstitial ad not ready (null)");
             return;
         }
         try {
-            addLog("Showing interstitial ad");
+            Log.i(TAG, "Showing interstitial ad");
             interstitialAd.show(this);
-            addLog("Interstitial ad shown successfully");
+            Log.i(TAG, "Interstitial ad shown successfully");
             interstitialAd = null;
             loadInterstitialAd();
         } catch (Exception e) {
-            addLog("Failed to show interstitial ad: " + Log.getStackTraceString(e));
+            Log.e(TAG, "Failed to show interstitial ad", e);
         }
     }
 
@@ -255,41 +230,41 @@ public class MainActivity extends Activity {
             RewardedAd.load(this, REWARDED_AD_UNIT_ID, adRequest, new RewardedAdLoadCallback() {
                 @Override
                 public void onAdLoaded(RewardedAd ad) {
-                    addLog("Rewarded ad LOADED successfully");
+                    Log.d(TAG, "Rewarded ad LOADED successfully");
                     rewardedAd = ad;
                 }
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    addLog("Rewarded ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    Log.e(TAG, "Rewarded ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     rewardedAd = null;
                 }
             });
         } catch (Exception e) {
-            addLog("Failed to load rewarded ad: " + Log.getStackTraceString(e));
+            Log.e(TAG, "Failed to load rewarded ad", e);
         }
     }
 
     private void showRewardedAd() {
         if (rewardedAd == null) {
-            addLog("Rewarded ad not ready (null)");
+            Log.d(TAG, "Rewarded ad not ready (null)");
             return;
         }
         try {
-            addLog("Showing rewarded ad");
+            Log.i(TAG, "Showing rewarded ad");
             rewardedAd.show(this, rewardItem -> {
-                addLog("Rewarded ad COMPLETED. Reward: " + rewardItem.getAmount() + " " + rewardItem.getType());
+                Log.i(TAG, "Rewarded ad COMPLETED. Reward: " + rewardItem.getAmount() + " " + rewardItem.getType());
                 runOnUiThread(() -> {
                     if (webView != null) {
                         webView.evaluateJavascript("javascript:onRewardEarned('" + rewardItem.getType() + "', " + rewardItem.getAmount() + ")", null);
                     }
                 });
             });
-            addLog("Rewarded ad shown successfully");
+            Log.i(TAG, "Rewarded ad shown successfully");
             rewardedAd = null;
             loadRewardedAd();
         } catch (Exception e) {
-            addLog("Failed to show rewarded ad: " + Log.getStackTraceString(e));
+            Log.e(TAG, "Failed to show rewarded ad", e);
         }
     }
 

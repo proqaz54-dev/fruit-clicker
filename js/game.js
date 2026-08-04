@@ -158,55 +158,6 @@ function onRewardEarned(type, amount) {
   }
 }
 
-function getAdLogs() {
-  try {
-    if (window.AndroidAds && typeof window.AndroidAds.getLogs === 'function') {
-      return window.AndroidAds.getLogs();
-    }
-  } catch (e) {
-    return 'Error getting logs: ' + e.message;
-  }
-  return 'Logs not available';
-}
-
-function showLogs() {
-  const logs = getAdLogs();
-  let modal = document.getElementById('logModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'logModal';
-    modal.className = 'log-modal-overlay';
-    modal.innerHTML = `
-      <div class="log-modal">
-        <div class="log-modal-header">
-          <h3>📋 AdMob Logs</h3>
-          <button class="log-modal-close" id="logModalClose">&times;</button>
-        </div>
-        <div class="log-modal-body">
-          <pre id="logContent">Loading logs...</pre>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    document.getElementById('logModalClose').addEventListener('click', () => {
-      modal.classList.remove('active');
-    });
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
-    });
-  }
-
-  const logContent = document.getElementById('logContent');
-  if (logContent) {
-    logContent.textContent = logs || 'No logs available yet. Try performing some ad actions first.';
-  }
-  modal.classList.add('active');
-}
-
 class Game {
   constructor() {
     this.coins = 0;
@@ -521,23 +472,6 @@ class Game {
         shopHtml += '</div>';
         shopContainer.innerHTML = shopHtml;
 
-        // Logs button
-        const logsHtml = `
-          <div class="shop-panel" style="margin-top:20px;">
-            <div class="shop-header"><h3>📋 Ad Logs</h3></div>
-            <p class="shop-desc">View detailed AdMob logs to debug ads.</p>
-            <button class="shop-btn" id="showLogsBtn">📋 Show Ad Logs</button>
-          </div>
-        `;
-        shopContainer.insertAdjacentHTML('beforeend', logsHtml);
-
-        const logsBtn = document.getElementById('showLogsBtn');
-        if (logsBtn) {
-          logsBtn.addEventListener('click', () => {
-            showLogs();
-          });
-        }
-
        // Render Shop Stock Items
       const stockList = document.getElementById('gardenShopList');
       if (stockList && this.shopStock.length > 0) {
@@ -574,12 +508,49 @@ class Game {
       }
 
         this.updateShopTimer();
+
+        // Daily reward countdown
+        const nextMidnight = new Date();
+        nextMidnight.setHours(24, 0, 0, 0);
+        const now = new Date();
+        const diff = nextMidnight - now;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        const dailyPanel = document.createElement('div');
+        dailyPanel.className = 'shop-panel';
+        dailyPanel.id = 'dailyRewardPanel';
+        const currentDay = ((this.loginStreak - 1) % 7) + 1;
+        const currentReward = DAILY_REWARDS.find(r => r.day === currentDay) || DAILY_REWARDS[0];
+        const claimed = this.claimedDailyRewardToday;
+
+        dailyPanel.innerHTML = `
+          <div class="shop-header"><h3>🎁 Daily Reward</h3></div>
+          <div class="shop-desc">Day ${currentDay} reward${claimed ? ' claimed' : ''}</div>
+          <div class="daily-reward-emoji">${currentReward.emoji}</div>
+          <div class="daily-reward-info">
+            ${claimed
+              ? '<span class="daily-claimed">✅ Claimed today</span>'
+              : `<button class="shop-btn" id="dailyClaimBtn">Claim Day ${currentDay}</button>`}
+          </div>
+          <div class="daily-timer" id="dailyTimer">Next reward in: ${hours}h ${minutes}m</div>
+        `;
+        shopContainer.insertAdjacentHTML('beforeend', dailyPanel.outerHTML);
+
+        const dailyBtn = document.getElementById('dailyClaimBtn');
+        if (dailyBtn && !claimed) {
+          dailyBtn.addEventListener('click', () => {
+            this.claimDailyReward(currentReward);
+          });
+        }
      }
 
     const list = document.getElementById('fruitsList');
     if (list) {
       list.innerHTML = '';
     }
+
+    this.updateDailyTimer();
   }
 
   updateUI() {
@@ -1499,6 +1470,11 @@ class Game {
       this.checkTimeRewards();
     }, 60000);
 
+    // Daily reward timer update every minute
+    this._dailyTimerInterval = setInterval(() => {
+      this.updateDailyTimer();
+    }, 60000);
+
     this.saveInterval = setInterval(() => this.save(), 10000);
 
     setTimeout(() => {
@@ -1516,6 +1492,18 @@ class Game {
     const secs = Math.floor((remaining % 60000) / 1000);
     el.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
     el.classList.toggle('urgent', remaining < 30000);
+  }
+
+  updateDailyTimer() {
+    const timerEl = document.getElementById('dailyTimer');
+    if (!timerEl) return;
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0);
+    const diff = nextMidnight - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    timerEl.textContent = 'Next reward in: ' + hours + 'h ' + minutes + 'm';
   }
 
    setupEventListeners() {
