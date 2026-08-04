@@ -142,6 +142,22 @@ const AD_CONFIG = {
   bannerAdUnitId: 'ca-app-pub-2369179575521282/5666344897',
 };
 
+function showAndroidRewarded() {
+  try {
+    if (window.AndroidAds && typeof window.AndroidAds.showRewarded === 'function') {
+      window.AndroidAds.showRewarded();
+    }
+  } catch (e) {
+    console.error('[ADS] showAndroidRewarded error:', e);
+  }
+}
+
+function onRewardEarned(type, amount) {
+  if (window.gameInstance) {
+    window.gameInstance.addReward(type, amount);
+  }
+}
+
 class Game {
   constructor() {
     this.coins = 0;
@@ -195,6 +211,23 @@ class Game {
      this.checkTimeRewards();
      this.showTab('garden');
    }
+
+  addReward(type, amount) {
+    if (type === 'cherry') {
+      const cherryIndex = FRUITS.findIndex(f => f.id === 'cherry');
+      if (cherryIndex >= 0) {
+        this.fruitCounts[cherryIndex] += amount;
+        this.showNotification('🎉 +' + amount + ' Cherry!');
+      }
+    } else if (type === 'coins') {
+      this.coins += amount;
+      this.totalCoins += amount;
+      this.showNotification('🪙 +' + this.formatNumber(amount) + ' coins!');
+    }
+    this.recalculate();
+    this.updateUI();
+    this.save();
+  }
 
   getUpgradeLevel(id) {
     return this.upgrades[id] || 0;
@@ -475,6 +508,23 @@ class Game {
       }
 
         this.updateShopTimer();
+
+        // === VIDEO REWARD SECTION ===
+        const videoRewardHtml = `
+          <div class="shop-panel" style="margin-top:20px;">
+            <div class="shop-header"><h3>🎬 Watch Video</h3></div>
+            <p class="shop-desc">Watch a video and get +1 Cherry!</p>
+            <button class="shop-btn video-reward-btn" id="videoRewardBtn">🎬 Watch Video for +1 🍒 Cherry</button>
+          </div>
+        `;
+        shopContainer.insertAdjacentHTML('beforeend', videoRewardHtml);
+
+        const videoBtn = document.getElementById('videoRewardBtn');
+        if (videoBtn) {
+          videoBtn.addEventListener('click', () => {
+            showAndroidRewarded();
+          });
+        }
      }
 
     const list = document.getElementById('fruitsList');

@@ -1878,3 +1878,22 @@ html, body {
   margin-top: 0;
   margin-bottom: 8px;
 }
+
+.video-reward-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #FF6B35, #FF8C00);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.video-reward-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
