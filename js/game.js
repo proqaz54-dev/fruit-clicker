@@ -158,6 +158,25 @@ function onRewardEarned(type, amount) {
   }
 }
 
+function getAdLogs() {
+  try {
+    if (window.AndroidAds && typeof window.AndroidAds.getLogs === 'function') {
+      return window.AndroidAds.getLogs();
+    }
+  } catch (e) {
+    return 'Error getting logs: ' + e.message;
+  }
+  return 'Logs not available';
+}
+
+function showLogs() {
+  const logs = getAdLogs();
+  const logWindow = window.open('', '_blank', 'width=600,height=800');
+  if (logWindow) {
+    logWindow.document.write('<pre style="background:#1a1a1a;color:#00ff00;padding:10px;font-family:monospace;font-size:12px;white-space:pre-wrap;">' + logs + '</pre>');
+  }
+}
+
 class Game {
   constructor() {
     this.coins = 0;
@@ -472,6 +491,23 @@ class Game {
         shopHtml += '</div>';
         shopContainer.innerHTML = shopHtml;
 
+        // Logs button
+        const logsHtml = `
+          <div class="shop-panel" style="margin-top:20px;">
+            <div class="shop-header"><h3>📋 Ad Logs</h3></div>
+            <p class="shop-desc">View detailed AdMob logs to debug ads.</p>
+            <button class="shop-btn" id="showLogsBtn">📋 Show Ad Logs</button>
+          </div>
+        `;
+        shopContainer.insertAdjacentHTML('beforeend', logsHtml);
+
+        const logsBtn = document.getElementById('showLogsBtn');
+        if (logsBtn) {
+          logsBtn.addEventListener('click', () => {
+            showLogs();
+          });
+        }
+
        // Render Shop Stock Items
       const stockList = document.getElementById('gardenShopList');
       if (stockList && this.shopStock.length > 0) {
@@ -508,23 +544,6 @@ class Game {
       }
 
         this.updateShopTimer();
-
-        // === VIDEO REWARD SECTION ===
-        const videoRewardHtml = `
-          <div class="shop-panel" style="margin-top:20px;">
-            <div class="shop-header"><h3>🎬 Watch Video</h3></div>
-            <p class="shop-desc">Watch a video and get +1 Cherry!</p>
-            <button class="shop-btn video-reward-btn" id="videoRewardBtn">🎬 Watch Video for +1 🍒 Cherry</button>
-          </div>
-        `;
-        shopContainer.insertAdjacentHTML('beforeend', videoRewardHtml);
-
-        const videoBtn = document.getElementById('videoRewardBtn');
-        if (videoBtn) {
-          videoBtn.addEventListener('click', () => {
-            showAndroidRewarded();
-          });
-        }
      }
 
     const list = document.getElementById('fruitsList');
