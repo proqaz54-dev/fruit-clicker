@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
     private RewardedAd rewardedAd;
     private LinearLayout rootLayout;
     private final List<String> logBuffer = new ArrayList<>();
-    private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/8761150204";
+    private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/8848900250";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-5166043026354710/6350609288";
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-5166043026354710/6750330460";
 
