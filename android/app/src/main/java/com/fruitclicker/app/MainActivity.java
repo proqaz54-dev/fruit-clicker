@@ -28,6 +28,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private WebView webView;
     private AdView adView;
+    private LinearLayout rootLayout;
     private static final String AD_UNIT_ID = "ca-app-pub-2369179575521282/3426927468";
 
     @Override
