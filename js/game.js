@@ -191,8 +191,7 @@ class Game {
     // Daily rewards
     this.lastLoginDate = null;
     this.loginStreak = 0;
-    this.lastDailyRewardDate = null;
-    this.claimedDailyRewardToday = false;
+    this.claimedDailyRewardDays = new Set();
 
      this.currentStock = [];
      this.lastStockSeed = -1;
@@ -1046,8 +1045,12 @@ class Game {
       this.loginStreak = 1;
     }
 
+    const currentDay = ((this.loginStreak - 1) % 7) + 1;
+    if (currentDay === 1 && this.loginStreak > 1) {
+      this.claimedDailyRewardDays.clear();
+    }
+
     this.lastLoginDate = today;
-    this.claimedDailyRewardToday = false;
   }
 
   renderDailyRewards() {
@@ -1064,8 +1067,11 @@ class Game {
       } else {
         this.loginStreak = 1;
       }
+      const newDay = ((this.loginStreak - 1) % 7) + 1;
+      if (newDay === 1) {
+        this.claimedDailyRewardDays.clear();
+      }
       this.lastLoginDate = today;
-      this.claimedDailyRewardToday = false;
       this.save();
     }
 
@@ -1076,11 +1082,12 @@ class Game {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
+    const currentDay = ((this.loginStreak - 1) % 7) + 1;
+
     DAILY_REWARDS.forEach((reward, i) => {
-      const dayInCycle = ((this.loginStreak - 1) % 7) + 1;
-      const isToday = reward.day === dayInCycle && !this.claimedDailyRewardToday;
-      const isPast = reward.day < dayInCycle;
-      const isClaimed = reward.day < dayInCycle || (reward.day === dayInCycle && this.claimedDailyRewardToday);
+      const isClaimed = this.claimedDailyRewardDays.has(reward.day);
+      const isToday = reward.day === currentDay && !isClaimed;
+      const isPast = reward.day < currentDay;
 
       const card = document.createElement('div');
       card.className = 'daily-reward-item' + (isToday ? ' today' : isPast ? ' past' : '');
@@ -1091,11 +1098,11 @@ class Game {
 
       card.innerHTML = `
         <div class="daily-day">Day ${reward.day}</div>
-        <div class="daily-icon">${isPast ? '✅' : rewardDisplay}</div>
-        <div class="daily-label">${isToday ? 'TODAY!' : isPast ? 'Done' : 'Locked'}</div>
+        <div class="daily-icon">${isClaimed || isPast ? '✅' : rewardDisplay}</div>
+        <div class="daily-label">${isClaimed ? 'Claimed' : isToday ? 'TODAY!' : isPast ? 'Done' : 'Locked'}</div>
       `;
 
-      if (isToday && !this.claimedDailyRewardToday) {
+      if (isToday && !isClaimed) {
         card.addEventListener('click', () => this.claimDailyReward(reward));
         card.style.cursor = 'pointer';
       }
@@ -1115,9 +1122,11 @@ class Game {
   }
 
   claimDailyReward(reward) {
-    if (this.claimedDailyRewardToday) return;
+    const currentDay = ((this.loginStreak - 1) % 7) + 1;
+    if (this.claimedDailyRewardDays.has(reward.day)) return;
+    if (reward.day !== currentDay) return;
 
-    this.claimedDailyRewardToday = true;
+    this.claimedDailyRewardDays.add(reward.day);
 
     if (reward.type === 'coins') {
       this.coins += reward.amount;
@@ -1282,7 +1291,7 @@ class Game {
       totalCrystals: this.totalCrystals,
       lastLoginDate: this.lastLoginDate,
       loginStreak: this.loginStreak,
-      claimedDailyRewardToday: this.claimedDailyRewardToday,
+      claimedDailyRewardDays: Array.from(this.claimedDailyRewardDays),
       claimedTimeRewards: this.claimedTimeRewards,
       sessionStartTime: this.sessionStartTime,
       upgrades: this.upgrades,
@@ -1327,7 +1336,7 @@ class Game {
       this.totalCrystals = data.totalCrystals || 0;
       this.lastLoginDate = data.lastLoginDate || null;
       this.loginStreak = data.loginStreak || 0;
-      this.claimedDailyRewardToday = data.claimedDailyRewardToday || false;
+      this.claimedDailyRewardDays = new Set(data.claimedDailyRewardDays || []);
       this.claimedTimeRewards = data.claimedTimeRewards || [];
       this.sessionStartTime = data.sessionStartTime || Date.now();
 
@@ -1387,7 +1396,7 @@ class Game {
     this.totalCrystals = data.totalCrystals || 0;
     this.lastLoginDate = data.lastLoginDate || null;
     this.loginStreak = data.loginStreak || 0;
-    this.claimedDailyRewardToday = data.claimedDailyRewardToday || false;
+    this.claimedDailyRewardDays = new Set();
     this.claimedTimeRewards = data.claimedTimeRewards || [];
     this.sessionStartTime = data.sessionStartTime || Date.now();
     
