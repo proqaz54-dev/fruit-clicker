@@ -168,7 +168,8 @@ public class MainActivity extends Activity {
             Display display = getWindowManager().getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, size.x);
+            int width = Math.min(size.x, 400);
+            AdSize adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, width);
             adView.setAdSize(adSize);
             LinearLayout.LayoutParams adParams = (LinearLayout.LayoutParams) adView.getLayoutParams();
             if (adParams != null) {
