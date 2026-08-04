@@ -508,49 +508,12 @@ class Game {
       }
 
         this.updateShopTimer();
-
-        // Daily reward countdown
-        const nextMidnight = new Date();
-        nextMidnight.setHours(24, 0, 0, 0);
-        const now = new Date();
-        const diff = nextMidnight - now;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-        const dailyPanel = document.createElement('div');
-        dailyPanel.className = 'shop-panel';
-        dailyPanel.id = 'dailyRewardPanel';
-        const currentDay = ((this.loginStreak - 1) % 7) + 1;
-        const currentReward = DAILY_REWARDS.find(r => r.day === currentDay) || DAILY_REWARDS[0];
-        const claimed = this.claimedDailyRewardToday;
-
-        dailyPanel.innerHTML = `
-          <div class="shop-header"><h3>🎁 Daily Reward</h3></div>
-          <div class="shop-desc">Day ${currentDay} reward${claimed ? ' claimed' : ''}</div>
-          <div class="daily-reward-emoji">${currentReward.emoji}</div>
-          <div class="daily-reward-info">
-            ${claimed
-              ? '<span class="daily-claimed">✅ Claimed today</span>'
-              : `<button class="shop-btn" id="dailyClaimBtn">Claim Day ${currentDay}</button>`}
-          </div>
-          <div class="daily-timer" id="dailyTimer">Next reward in: ${hours}h ${minutes}m</div>
-        `;
-        shopContainer.insertAdjacentHTML('beforeend', dailyPanel.outerHTML);
-
-        const dailyBtn = document.getElementById('dailyClaimBtn');
-        if (dailyBtn && !claimed) {
-          dailyBtn.addEventListener('click', () => {
-            this.claimDailyReward(currentReward);
-          });
-        }
      }
 
     const list = document.getElementById('fruitsList');
     if (list) {
       list.innerHTML = '';
     }
-
-    this.updateDailyTimer();
   }
 
   updateUI() {
@@ -623,7 +586,10 @@ class Game {
     
     if (tab === 'stats') document.getElementById('tabStats').style.display = 'block';
     if (tab === 'cases') document.getElementById('tabCases').style.display = 'block';
-    if (tab === 'rewards') document.getElementById('tabRewards').style.display = 'block';
+    if (tab === 'rewards') {
+      document.getElementById('tabRewards').style.display = 'block';
+      this.updateDailyTimer();
+    }
     if (tab === 'inventory') document.getElementById('tabInventory').style.display = 'block';
     if (tab === 'upgrades') document.getElementById('tabUpgrades').style.display = 'block';
     
@@ -1090,6 +1056,13 @@ class Game {
     if (!container) return;
     container.innerHTML = '';
 
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 0);
+    const now = new Date();
+    const diff = nextMidnight - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
     DAILY_REWARDS.forEach((reward, i) => {
       const dayInCycle = ((this.loginStreak - 1) % 7) + 1;
       const isToday = reward.day === dayInCycle && !this.claimedDailyRewardToday;
@@ -1117,7 +1090,11 @@ class Game {
       container.appendChild(card);
     });
 
-    // Update streak display
+    const timerEl = document.getElementById('dailyTimer');
+    if (timerEl) {
+      timerEl.textContent = 'Next reward in: ' + hours + 'h ' + minutes + 'm';
+    }
+
     const streakEl = document.getElementById('streakDisplay');
     if (streakEl) {
       streakEl.textContent = '🔥 ' + this.loginStreak + ' day streak';
