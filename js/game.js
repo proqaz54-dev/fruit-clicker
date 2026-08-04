@@ -95,6 +95,13 @@ const CRYSTAL_CASES = [
 ];
 
 // Time-based rewards
+function showAndroidInterstitial() {
+  try {
+    if (window.AndroidAds && typeof window.AndroidAds.showInterstitial === 'function') {
+      window.AndroidAds.showInterstitial();
+    }
+  } catch (e) {}
+}
 const TIME_REWARDS = [
   { minutes: 10, type: 'coins', amount: 500, message: '10 minutes played! +500 coins' },
   { minutes: 20, type: 'crystals', amount: 5, message: '20 minutes played! +5 crystals' },
@@ -571,6 +578,7 @@ class Game {
     this.showNotification('🌟 Prestiged! Multiplier: ' + this.prestigeMultiplier + 'x');
     this.playPrestigeSound();
     this.save();
+    showAndroidInterstitial();
   }
 
   generateStock() {
@@ -1393,6 +1401,10 @@ class Game {
     }, 60000);
 
     this.saveInterval = setInterval(() => this.save(), 10000);
+
+    setTimeout(() => {
+      showAndroidInterstitial();
+    }, 3000);
   }
 
   updateShopTimer() {

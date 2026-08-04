@@ -11,6 +11,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -61,6 +62,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         );
+        adView.setBackgroundColor(0xFF000000);
         rootLayout.addView(adView, adParams);
 
         setContentView(rootLayout);
@@ -90,6 +92,13 @@ public class MainActivity extends Activity {
         });
         webView.setWebChromeClient(new WebChromeClient());
 
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void showInterstitial() {
+                runOnUiThread(MainActivity.this::showInterstitialAd);
+            }
+        }, "AndroidAds");
+
         webView.loadUrl("file:///android_asset/index.html");
     }
 
@@ -106,17 +115,8 @@ public class MainActivity extends Activity {
             });
         } catch (Exception e) {
             Log.e(TAG, "AdMob initialization failed", e);
-            if (adView != null) {
-                adView.setVisibility(View.GONE);
-            }
         }
     }
-
-    // To enable test ads:
-    // 1. Run the app on your device
-    // 2. Check logcat for "Use RequestConfiguration.Builder.setTestDeviceIds"
-    // 3. Copy the device ID shown in the log
-    // 4. Replace "YOUR_TEST_DEVICE_ID" with the actual device ID
 
     private void loadAdMobBanner() {
         if (adView == null) return;
@@ -137,20 +137,31 @@ public class MainActivity extends Activity {
             adView.setAdListener(new AdListener() {
                 @Override
                 public void onAdLoaded() {
-                    Log.d(TAG, "AdMob banner loaded");
+                    Log.d(TAG, "Banner ad loaded");
                     adView.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
-                    Log.e(TAG, "AdMob banner failed: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
-                    adView.setVisibility(View.GONE);
+                    Log.e(TAG, "Banner ad failed: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
+                    adView.setVisibility(View.VISIBLE);
+                    adView.setBackgroundColor(0xFF000000);
+                }
+
+                @Override
+                public void onAdOpened() {
+                    Log.d(TAG, "Banner ad opened");
+                }
+
+                @Override
+                public void onAdClosed() {
+                    Log.d(TAG, "Banner ad closed");
                 }
             });
             adView.loadAd(adRequest);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to load AdMob banner", e);
-            adView.setVisibility(View.GONE);
+            Log.e(TAG, "Failed to load banner ad", e);
+            adView.setVisibility(View.VISIBLE);
         }
     }
 
