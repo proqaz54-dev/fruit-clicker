@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
     private void initAds() {
         try {
             RequestConfiguration configuration = new RequestConfiguration.Builder()
-                .setTestDeviceIds("YOUR_TEST_DEVICE_ID")
+                .setTestDeviceIds(java.util.Collections.emptyList())
                 .build();
             MobileAds.setRequestConfiguration(configuration);
             MobileAds.initialize(MainActivity.this, initializationStatus -> {
