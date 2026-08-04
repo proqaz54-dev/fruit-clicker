@@ -1032,15 +1032,14 @@ class Game {
   // ===== DAILY REWARDS =====
   checkDailyReward() {
     const today = new Date().toDateString();
-    
+
     if (this.lastLoginDate === today) {
-      this.claimedDailyRewardToday = true;
       return;
     }
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (this.lastLoginDate === yesterday.toDateString()) {
       this.loginStreak++;
     } else if (this.lastLoginDate !== today) {
@@ -1056,6 +1055,20 @@ class Game {
     if (!container) return;
     container.innerHTML = '';
 
+    const today = new Date().toDateString();
+    if (this.lastLoginDate !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (this.lastLoginDate === yesterday.toDateString()) {
+        this.loginStreak++;
+      } else {
+        this.loginStreak = 1;
+      }
+      this.lastLoginDate = today;
+      this.claimedDailyRewardToday = false;
+      this.save();
+    }
+
     const nextMidnight = new Date();
     nextMidnight.setHours(24, 0, 0, 0);
     const now = new Date();
@@ -1068,14 +1081,14 @@ class Game {
       const isToday = reward.day === dayInCycle && !this.claimedDailyRewardToday;
       const isPast = reward.day < dayInCycle;
       const isClaimed = reward.day < dayInCycle || (reward.day === dayInCycle && this.claimedDailyRewardToday);
-      
+
       const card = document.createElement('div');
       card.className = 'daily-reward-item' + (isToday ? ' today' : isPast ? ' past' : '');
-      
+
       const rewardDisplay = reward.type === 'coins' ? '🪙 ' + reward.amount :
                            reward.type === 'crystals' ? '💎 ' + reward.amount :
                            reward.emoji;
-      
+
       card.innerHTML = `
         <div class="daily-day">Day ${reward.day}</div>
         <div class="daily-icon">${isPast ? '✅' : rewardDisplay}</div>
