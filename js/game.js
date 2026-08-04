@@ -171,10 +171,40 @@ function getAdLogs() {
 
 function showLogs() {
   const logs = getAdLogs();
-  const logWindow = window.open('', '_blank', 'width=600,height=800');
-  if (logWindow) {
-    logWindow.document.write('<pre style="background:#1a1a1a;color:#00ff00;padding:10px;font-family:monospace;font-size:12px;white-space:pre-wrap;">' + logs + '</pre>');
+  let modal = document.getElementById('logModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'logModal';
+    modal.className = 'log-modal-overlay';
+    modal.innerHTML = `
+      <div class="log-modal">
+        <div class="log-modal-header">
+          <h3>📋 AdMob Logs</h3>
+          <button class="log-modal-close" id="logModalClose">&times;</button>
+        </div>
+        <div class="log-modal-body">
+          <pre id="logContent">Loading logs...</pre>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('logModalClose').addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
   }
+
+  const logContent = document.getElementById('logContent');
+  if (logContent) {
+    logContent.textContent = logs || 'No logs available yet. Try performing some ad actions first.';
+  }
+  modal.classList.add('active');
 }
 
 class Game {
