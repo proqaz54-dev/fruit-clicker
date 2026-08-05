@@ -159,6 +159,7 @@ public class MainActivity extends Activity {
                 public void onAdLoaded() {
                     Log.i(TAG, "Banner ad LOADED successfully");
                     adView.setVisibility(View.VISIBLE);
+                    showToast("Banner: LOADED");
                 }
 
                 @Override
@@ -166,6 +167,7 @@ public class MainActivity extends Activity {
                     Log.e(TAG, "Banner ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     adView.setVisibility(View.VISIBLE);
                     adView.setBackgroundColor(0xFF000000);
+                    showToast("Banner FAILED code " + loadAdError.getCode() + ": " + loadAdError.getMessage());
                 }
 
                 @Override
@@ -200,6 +202,7 @@ public class MainActivity extends Activity {
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     Log.e(TAG, "Interstitial ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     interstitialAd = null;
+                    showToast("Interstitial FAILED code " + loadAdError.getCode() + ": " + loadAdError.getMessage());
                 }
             });
         } catch (Exception e) {
@@ -238,6 +241,7 @@ public class MainActivity extends Activity {
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     Log.e(TAG, "Rewarded ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     rewardedAd = null;
+                    showToast("Rewarded FAILED code " + loadAdError.getCode() + ": " + loadAdError.getMessage());
                 }
             });
         } catch (Exception e) {
@@ -265,6 +269,16 @@ public class MainActivity extends Activity {
             loadRewardedAd();
         } catch (Exception e) {
             Log.e(TAG, "Failed to show rewarded ad", e);
+        }
+    }
+
+    private void showToast(String msg) {
+        try {
+            runOnUiThread(() ->
+                android.widget.Toast.makeText(MainActivity.this, msg, android.widget.Toast.LENGTH_LONG).show()
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "Toast failed", e);
         }
     }
 
