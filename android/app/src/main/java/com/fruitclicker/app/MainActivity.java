@@ -125,8 +125,6 @@ public class MainActivity extends Activity {
                     Log.i(TAG, "AdMob initialized: " + initializationStatus.toString());
                     Log.i(TAG, "Adapter statuses: " + initializationStatus.getAdapterStatusMap().toString());
                     loadAdMobBanner();
-                    loadInterstitialAd();
-                    loadRewardedAd();
                 } catch (Exception e) {
                     Log.e(TAG, "Error in AdMob init callback", e);
                 }
