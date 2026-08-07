@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
     private InterstitialAd interstitialAd;
     private RewardedAd rewardedAd;
     private LinearLayout rootLayout;
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
+    private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/2564200102";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
 
