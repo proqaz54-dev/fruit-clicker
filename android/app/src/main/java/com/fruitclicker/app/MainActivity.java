@@ -35,9 +35,10 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private WebView webView;
     private AdView adView;
+    private LinearLayout rootLayout;
+    private android.widget.TextView debugView;
     private InterstitialAd interstitialAd;
     private RewardedAd rewardedAd;
-    private LinearLayout rootLayout;
     private static final String AD_UNIT_ID = "ca-app-pub-5166043026354710/2564200102";
     private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712";
     private static final String REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
@@ -52,6 +53,14 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT
         ));
+
+        debugView = new android.widget.TextView(this);
+        debugView.setBackgroundColor(0xFF111111);
+        debugView.setTextColor(0xFFFFFFFF);
+        debugView.setTextSize(11f);
+        debugView.setPadding(8, 6, 8, 6);
+        debugView.setText("Ad debug...");
+        rootLayout.addView(debugView);
 
         webView = new WebView(this);
         LinearLayout.LayoutParams webParams = new LinearLayout.LayoutParams(
@@ -114,6 +123,7 @@ public class MainActivity extends Activity {
 
     private void initAds() {
         Log.i(TAG, "ADMOB INIT START");
+        updateDebug("AdAppID=" + "ca-app-pub-5166043026354710~6450113415");
         try {
             RequestConfiguration configuration = new RequestConfiguration.Builder()
                 .setTestDeviceIds(java.util.Collections.emptyList())
@@ -157,7 +167,7 @@ public class MainActivity extends Activity {
                 public void onAdLoaded() {
                     Log.i(TAG, "Banner ad LOADED successfully");
                     adView.setVisibility(View.VISIBLE);
-                    showToast("Banner: LOADED");
+                    updateDebug("Banner: LOADED (real ad running)");
                 }
 
                 @Override
@@ -165,7 +175,7 @@ public class MainActivity extends Activity {
                     Log.e(TAG, "Banner ad FAILED: " + loadAdError.getMessage() + " (code: " + loadAdError.getCode() + ")");
                     adView.setVisibility(View.VISIBLE);
                     adView.setBackgroundColor(0xFF000000);
-                    showToast("Banner FAILED code " + loadAdError.getCode() + ": " + loadAdError.getMessage());
+                    updateDebug("Banner FAILED code " + loadAdError.getCode() + ": " + loadAdError.getMessage());
                 }
 
                 @Override
@@ -267,6 +277,18 @@ public class MainActivity extends Activity {
             loadRewardedAd();
         } catch (Exception e) {
             Log.e(TAG, "Failed to show rewarded ad", e);
+        }
+    }
+
+    private void updateDebug(String msg) {
+        try {
+            runOnUiThread(() -> {
+                if (debugView != null) {
+                    debugView.setText(msg);
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "updateDebug failed", e);
         }
     }
 
